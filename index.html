@@ -8,7 +8,7 @@
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Police Inter -->
+  <!-- Police Inter & styles de base -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
     :root { color-scheme: light; }
@@ -16,21 +16,17 @@
       font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
       background-color: #f7f7f7;
     }
-    /* Masquer le contenu avant init */
     #app-container { opacity: 0; transition: opacity .5s; }
     .text-shadow-custom { text-shadow: 2px 2px 4px rgba(0,0,0,.1); }
-    /* Scroll-to-top */
     #scroll-to-top { transition: opacity .3s, transform .3s; }
   </style>
 </head>
 <body>
-<div id="app-container" class="min-h-screen p-4 sm:p-8 pt-4 pb-20 transition-opacity duration-500">
+<div id="app-container" class="min-h-screen p-4 sm:p-8 pt-4 pb-20">
   <header class="mb-6 sticky top-0 bg-white shadow-lg rounded-xl z-20 p-4 border-b-4 border-amber-500">
-    <a href="https://www.studi.com/fr/formation/juridique/mba-juriste-dentreprise-en-droit-social" target="_blank" class="block">
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom hover:text-amber-700 transition-colors">
-        MBA Juriste d'entreprise en Droit Social
-      </h1>
-    </a>
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom">
+      MBA Juriste d'entreprise en Droit Social
+    </h1>
     <p class="text-lg sm:text-xl font-semibold text-amber-600 mb-4">
       Suivi du Programme de la formation
     </p>
@@ -68,454 +64,460 @@
 
 <script>
 /* ==============================
-   Données du cursus (brutes)
+   Nouvelle liste (format underscore)
    ============================== */
-const COURSE_TITLE = "MBA Juriste d'entreprise en Droit Social";
 const COURSE_DATA_RAW = `
-        🟡 B0 : FONDAMENTAUX JURIDIQUES DE L'ENTREPRISE
-        🔵 B0_M1 : Mise à niveau en droit - Les contrats de l’entreprise
-        B0_M1-001 : Le contrat de vente du fonds de commerce
-        B0_M1-002 : Le contrat de location-gérance du fonds de commerce
-        B0_M1-003 : Le contrat de vente
-        B0_M1-004 : Les contrats de consommation
-        B0_M1-005 : Le compte de dépôt bancaire
-        B0_M1-006 : Les contrats de crédit aux entreprises
-        B0_M1-007 : Les sûretés
-        B0_M1-008 : Application : Maîtriser les contrats de l'entreprise
-        🔵 B0_M2 : Mise à niveau en droit - L’entreprise et ses responsabilités
-        B0_M2-001 : Les responsabilités civile et pénale
-        B0_M2-002 : La responsabilité pénale
-        B0_M2-003 : La procédure pénale
-        B0_M2-004 : La responsabilité civile extracontractuelle
-        B0_M2-005 : Les responsabilités du fait des produits défectueux et du préjudice environnemental
-        B0_M2-006 : Application : L'entreprise et ses responsabilités
-        🔵 B0_M3 : Mise à niveau en droit - L’organisation judiciaire
-        B0_M3-001 : L'organisation judiciaire européenne
-        B0_M3-002 : L'organisation judiciaire nationale
-        B0_M3-003 : L'action en justice
-        B0_M3-004 : Les MARD
-        B0_M3-005 : Application : Comprendre l'organisation judiciaire
-        🔵 B0_M4 : Mise à niveau en droit des sociétés
-        B0_M4-001 : Les notions d'entreprise et de société
-        B0_M4-002 : Les éléments constitutifs du contrat de société
-        B0_M4-003 : Le contrat de société
-        B0_M4-004 : La constitution de la société
-        B0_M4-005 : La société en formation
-        B0_M4-006 : Les attributs de la personnalité morale
-        B0_M4-007 : Les notions d'intérêt social et d'abus de droit
-        B0_M4-008 : Les organes de gestion
-        B0_M4-009 : Les associés
-        B0_M4-010 : Le contrôle de la société
-        B0_M4-011 : Le statut du commissaire aux comptes
-        B0_M4-012 : La dissolution et la liquidation des sociétés
-        B0_M4-013 : La transformation des sociétés
-        B0_M4-014 : Les sociétés sans personnalité juridique
-        B0_M4-015 : Application : Comprendre la nature et le fonctionnement d'une entreprise en société
-        B0_M4-016 : Les formes juridiques des sociétés
-        B0_M4-017 : Rédaction et gestion des documents juridiques
-        B0_M4-018 : Focus sur les statuts juridiques - SARL
-        B0_M4-019 : Focus sur les statuts juridiques - SA
-        B0_M4-020 : Focus sur les statuts juridiques - SAS
-        🔵 B0_M5 : Mise à niveau en droit - Propriété intellectuelle et industrielle
-        B0_M5-001 : La théorie du patrimoine
-        B0_M5-002 : La propriété
-        B0_M5-003 : Le fonds de commerce et le contrat de bail commercial
-        B0_M5-004 : La propriété industrielle : brevet, marque, dessins et modèles
-        B0_M5-005 : La propriété littéraire et artistique : le droit d'auteur
-        B0_M5-006 : Le droit de l'informatique et de la propriété industrielle
-        B0_M5-007 : La protection juridique des sites internet et des créations numériques
-        B0_M5-008 : Les règles juridiques d'utilisation d'internet
-        B0_M5-009 : Application : Caractériser les biens
-        🔵 B0_M6 : Mise à niveau en droit fiscal
-        B0_M6-001 : Les caractéristiques et les sources du droit fiscal
-        B0_M6-002 : La classification des impôts et taxes
-        B0_M6-003 : Organisation et rôle de l'administration fiscale et veille fiscale
-        B0_M6-004 : Application : Introduire le droit fiscal
-        🔵 B0_M7 : Mise à niveau en droit - Théorie générale du contrat
-        B0_M7-001 : La théorie générale du contrat
-        B0_M7-002 : La validité du contrat
-        B0_M7-003 : Les clauses contractuelles particulières
-        B0_M7-004 : L'exécution du contrat
-        B0_M7-005 : L'inexécution du contrat
-        B0_M7-006 : Application : Maîtriser la théorie générale du contrat
-        🔵 B0_M8 : Mise à niveau en droit de la concurrence
-        B0_M8-001 : Le contrôle des concentrations
-        B0_M8-002 : Les pratiques anticoncurrentielles
-        B0_M8-003 : L'entreprise et la concurrence déloyale
-        B0_M8-004 : La transparence et les pratiques restrictives de concurrence
-        B0_M8-005 : Application : Maîtriser les situations contraires au droit de la concurrence
-        🔵 B0_M9 : Mise à niveau en droit des procédures collectives
-        B0_M9-001 : L'évolution du droit de l'entreprise en difficulté
-        B0_M9-002 : La prévention des difficultés de l'entreprise
-        B0_M9-003 : Le traitement amiable des difficultés par la procédure de conciliation
-        B0_M9-004 : Le traitement judiciaire par les procédures collectives
-        B0_M9-005 : La procédure de sauvegarde
-        B0_M9-006 : Le sort des créanciers en période d'observation
-        B0_M9-007 : Le plan de sauvegarde ordinaire et la sauvegarde accélérée
-        B0_M9-008 : La procédure de redressement judiciaire
-        B0_M9-009 : La procédure de liquidation judiciaire
-        B0_M9-010 : Application : Pérenniser l'entreprise en difficulté
-        🔵 B0_M10 : Mise à niveau en droit de l’intelligence artificielle
-        B0_M10-001 : Un droit de l'IA dans les pratiques de l'entreprise
-        🟡 B1 : DROIT SOCIAL DU CONTRAT DE TRAVAIL
-        🔵 B1_M1 : Mise à niveau en droit social (Contrat de travail & Rupture)
-        B1_M1-001 : La notion de droit du travail
-        B1_M1-002 : La formation du contrat de travail
-        B1_M1-003 : Maîtriser la rédaction d’un contrat de travail
-        B1_M1-004 : L’exécution du contrat de travail
-        B1_M1-005 : Le contrat de travail à durée indéterminée
-        B1_M1-006 : Le CDD et le contrat de travail temporaire
-        B1_M1-007 : Le contrat de travail à temps partiel
-        B1_M1-008 : Les contrats de formation
-        B1_M1-009 : La rédaction du contrat de travail
-        B1_M1-010 : Application : Etablir les contrats de travail
-        B1_M1-011 : Comment et pourquoi se former à gestion des parcours salariés
-        B1_M1-012 : Le recrutement
-        B1_M1-013 : Les formalités administratives d'embauche
-        B1_M1-014 : La suspension du contrat de travail
-        B1_M1-015 : L'édition des documents de suspension du contrat
-        B1_M1-016 : La rupture du contrat de travail : introduction
-        B1_M1-017 : Le licenciement
-        B1_M1-018 : Les autres modes de rupture du contrat de travail
-        B1_M1-019 : Les fins de contrat : indemnité de précarité, ICP, Indemnité RTT, et autres indemnités
-        B1_M1-020 : Les fins de contrat : rupture conventionnelle, départ et mise à la retraite
-        B1_M1-021 : Les formalités de rupture du contrat de travail
-        B1_M1-022 : L'édition des documents de fin de contrat
-        B1_M1-023 : Synthèse et application : Traiter les entrées et sorties des salariés
-        🟡 B2 : PILOTAGE STRATÉGIQUE, VEILLE, ET ACCOMPAGNEMENT RH & OPÉRATIONS INTERNES
-        🔵 B2_M1 : Optimiser et présenter la veille
-        B2_M1-001 : Délimiter et structurer une veille pour une entreprise
-        B2_M1-002 : Développer un réseau d’experts pour une veille partagée
-        🔵 B2_M2 : Réaliser une veille juridique et sociale
-        B2_M2-001 : Les différents types de veille
-        B2_M2-002 : Introduction : la notion de veille juridique
-        B2_M2-003 : Comment faire de la veille juridique
-        B2_M2-004 : Les principaux sites d'actualité juridique
-        B2_M2-005 : Les différents flux juridiques officiels
-        B2_M2-006 : La réalisation de veille juridique
-        B2_M2-007 : Les outils pour une veille juridique efficace
-        B2_M2-008 : Le pilotage de veille juridique
-        B2_M2-009 : Les grandes tendances juridiques en France et leurs effets sur l’organisation
-        🔵 B2_M3 : La veille juridique en pratique
-        B2_M3-001 : Prise de connaissance et méthodologie d'utilisation des sites institutionnels
-        B2_M3-002 : Réaliser une note interne à partir d'une veille juridique en droit des données personnelles
-        B2_M3-003 : Réaliser une note interne à partir d'une veille juridique en matière de TVA
-        B2_M3-004 : Réaliser une note interne à partir d'une veille juridique en droit des contrats
-        🔵 B2_M4 : Procéder de la veille juridique à la recommandation stratégique
-        B2_M4-001 : Onboarding - Procéder de la veille juridique à la recommandation stratégique
-        B2_M4-002 : Utilisation de Village Justice et experts LinkedIn
-        B2_M4-003 : Présentation des bases de données juridiques et outils de veille
-        B2_M4-004 : Méthodologie de recherche et d'organisation de la veille
-        B2_M4-005 : Techniques de communication écrite
-        B2_M4-006 : Introduction aux bases de données juridiques
-        B2_M4-007 : Analyse des évolutions législatives
-        B2_M4-008 : Application - Recherche et présentation d'informations
-        B2_M4-009 : Reporting extra-financier et directives
-        B2_M4-010 : Mise en situation pratique de la veille juridique
-        B2_M4-011 : Impact des évolutions législatives internationales
-        B2_M4-012 : Outils numériques avancés pour la veille juridique
-        B2_M4-013 : Auto-Evaluation - Procéder de la veille juridique à la recommandation stratégique
-        B2_M4-014 : Application - Procéder de la veille juridique à la recommandation stratégique
-        B2_M4-015 : Offboarding - Procéder de la veille juridique à la recommandation stratégique
-        🔵 B2_M5 : Définir la stratégie juridique de l’entreprise
-        B2_M5-001 : Intégrer des LegalTech et de l’IA dans la stratégie juridique
-        B2_M5-002 : Maîtriser la méthodologie complète de l’audit juridique
-        B2_M5-003 : Elaborer un plan d’action correctives et préventives
-        B2_M5-004 : Digitaliser et automatiser les processus juridiques
-        🔵 B2_M6 : Concevoir, déployer et archiver la conformité
-        B2_M6-001 : Concevoir et rédiger des politiques de conformité
-        B2_M6-002 : Déployer et piloter les dispositifs de conformité
-        B2_M6-003 : Optimiser et sécuriser l'archivage
-        B2_M6-004 : Introduction au RGPD et archivage numérique
-        B2_M6-005 : Les règles d’archivage temporaire et l’anonymisation
-        B2_M6-006 : Minimisation des données et droit d’accès
-        B2_M6-007 : Sécurisation des accès et des données archivées
-        B2_M6-008 : Conséquences des violations de données
-        B2_M6-009 : Durées de conservation légale des documents
-        B2_M6-010 : Exemples de solutions techniques disponibles
-        B2_M6-011 : Élaboration d’une procédure d’archivage numérique
-        B2_M6-012 : Présentation des procédures d’archivage par secteur d’activité
-        B2_M6-013 : Auto-Evaluation - Optimiser et sécuriser l’archivage
-        B2_M6-014 : Application - Optimiser et sécuriser l’archivage
-        B2_M6-015 : Offboarding - Optimiser et sécuriser l’archivage
-        🔵 B2_M7 : Piloter une équipe RH
-        B2_M7-001 : Une fonction RH alignée avec les attentes et besoins de ses clients ?
-        B2_M7-002 : DRH et défis digitaux
-        B2_M7-003 : La mesure de la performance de la fonction RH
-        B2_M7-004 : Décliner la stratégie en action
-        B2_M7-005 : Des compétences repérées à l'équipe opérationnelle
-        B2_M7-006 : L'identification des compétences
-        B2_M7-007 : Évaluer le niveau de compétences
-        B2_M7-008 : Débriefer toute acquisition de compétence
-        B2_M7-009 : Acter la compétence acquise
-        B2_M7-010 : Talent Review
-        B2_M7-011 : Capitaliser sur l’expérience, tracer une roadmap
-        B2_M7-012 : Application : Piloter une équipe RH
-        🔵 B2_M8 : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
-        B2_M8-001 : Les théories de l'organisation au service du management
-        B2_M8-002 : Le management et le manager
-        B2_M8-003 : Le management des individus et des groupes
-        B2_M8-004 : Le management à distance
-        B2_M8-005 : Les plateformes de travail collaboratives
-        B2_M8-006 : Fixer des objectifs SMART
-        B2_M8-007 : L'utilité du suivi de la performance
-        B2_M8-008 : Les indicateurs de suivi selon les objectifs
-        B2_M8-009 : La fixation des objectifs de l'équipe
-        B2_M8-010 : Le suivi des objectifs de l'équipe
-        B2_M8-011 : Faire faire sans se substituer
-        B2_M8-012 : Intégrer la vision (cadre de référence) de l’autre
-        B2_M8-013 : Obtenir régulièrement
-        B2_M8-014 : Application : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
-        🔵 B2_M9 : Construire une politique de compensations and benefits
-        B2_M9-001 : La politique de rémunération
-        B2_M9-002 : La politique de rémunération et les politiques RH
-        B2_M9-003 : La politique de rémunération : élaborer et piloter
-        B2_M9-004 : La mise en oeuvre de sa politique salariale
-        B2_M9-005 : L'optimisation de sa politique salariale
-        B2_M9-006 : L'évaluation d'impact de la politique de rémunération
-        B2_M9-007 : Le Comp & Ben Manager
-        B2_M9-008 : Le benchmark de rémunération
-        B2_M9-009 : Les outils de benchmark pour s’assurer de la meilleure compétitivité en matière de rémunération
-        B2_M9-010 : Les primes et avantages alliés pour convaincre
-        B2_M9-011 : L’entretien de décision salariale
-        B2_M9-012 : Présentation de la rémunération brute et le décompte du temps de travail
-        B2_M9-013 : La rémunération brute : le salaire de base, les primes et la retenue pour absence
-        B2_M9-014 : La rémunération brute : le salaire de base, les primes et la retenue pour absence (Type: Leçons)
-        B2_M9-015 : Cas pratique - Salaire de base (Type: Exercices)
-        B2_M9-016 : Cas pratique - Primes et indemnités (Type: Exercices)
-        B2_M9-017 : La rémunération brute : les avantages en nature
-        B2_M9-018 : Les salaires net, imposable et à payer
-        B2_M9-019 : L’association des salariés aux performances de l’entreprise, généralités
-        B2_M9-020 : La protection sociale, généralités
-        B2_M9-021 : La protection sociale, généralités (Type: Leçons)
-        B2_M9-022 : Applications | Généralités (Type: Exercices)
-        B2_M9-023 : L’assurance maladie du régime général
-        B2_M9-024 : L’assurance maladie du régime général (Type: Leçons)
-        B2_M9-025 : Cas Analyse d'une documentation juridique (Type: Exercices)
-        B2_M9-026 : Cas Anthony | La branche assurance maladie du régime général (Type: Exercices)
-        B2_M9-027 : Cas Marie Line | La branche assurance maladie du régime général (Type: Exercices)
-        B2_M9-028 : Application : Construire une politique de compensations and benefits
-        🔵 B2_M10 : Comprendre et analyser des situations en droit de la sécurité sociale
-        B2_M10-001 : Onboarding vidéo : Comprendre et analyser des situations en droit de la sécurité sociale
-        B2_M10-002 : Introduction au droit de la sécurité sociale
-        B2_M10-003 : Le droit européen de la sécurité sociale
-        B2_M10-004 : Les régimes de la sécurité sociale
-        B2_M10-005 : Les régimes complémentaires de sécurité sociale
-        B2_M10-006 : Le contentieux en droit de la sécurité sociale
-        B2_M10-007 : La veille juridique et actualité
-        B2_M10-008 : Offboarding vidéo : Synthèse - Comprendre et analyser des situations en droit de la sécurité sociale
-        B2_M10-009 : Application : Comprendre et analyser des situations en droit de la sécurité sociale
-        B2_M10-010 : Auto-évaluation : Comprendre et analyser des situations en droit de la sécurité sociale
-        🔵 B2_M11 : Piloter le changement structurel d’une entreprise (RSE & Digital)
-        B2_M11-001 : Les préalables à une stratégie RSE
-        B2_M11-002 : Le cadre législatif et réglementaire
-        B2_M11-003 : Quelques obligations réglementaires relatives à la RSE en France
-        B2_M11-004 : Des actions volontaristes possibles relatives à la RSE
-        B2_M11-005 : La carte de transformation
-        B2_M11-006 : La communication en externe et en interne sur la RSE
-        B2_M11-007 : L'entrepreneuriat responsable et durable
-        B2_M11-008 : Les enjeux de la transformation digitale
-        B2_M11-009 : Les deux chantiers préliminaires à la TD
-        B2_M11-010 : Application : Piloter le changement structurel d'une entreprise
-        🔵 B2_M12 : Participer au déploiement d’un projet de transformation au sein de l’organisation
-        B2_M12-001 : Les projets de transformation
-        B2_M12-002 : Le diagnostic de la transformation
-        B2_M12-003 : Les évaluations des impacts
-        B2_M12-004 : Les interactions et les humains
-        B2_M12-005 : Le DRH project manager
-        B2_M12-006 : Les modes de gestion de projet dits "classiques"
-        B2_M12-007 : Les méthodologies agiles
-        B2_M12-008 : Les processus et les disciplines de la gestion de projet selon le PMBOK
-        B2_M12-009 : Le pilotage du projet
-        B2_M12-010 : Les acteurs et les ressources du projet
-        B2_M12-011 : La première découpe du projet
-        B2_M12-012 : La construction du planning
-        B2_M12-013 : Le rétroplanning
-        B2_M12-014 : La gestion du budget du projet
-        B2_M12-015 : Application : Faire face aux évolutions RH
-        🔵 B2_M13 : Piloter les impacts en matière de droit de la responsabilité
-        B2_M13-001 : Onboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
-        B2_M13-002 : Les bases du droit de la responsabilité
-        B2_M13-003 : La responsabilité des dirigeants et des administrateurs
-        B2_M13-004 : La responsabilité des professionnel
-        B2_M13-005 : La responsabilité environnementale
-        B2_M13-006 : La responsabilité en matière de données personnelles
-        B2_M13-007 : La responsabilité pénale des entreprises
-        B2_M13-008 : Offboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
-        B2_M13-009 : Application : Piloter les impacts en matière de droit de la responsabilité
-        B2_M13-010 : Auto-évaluation : Piloter les impacts en matière de droit de la responsabilité
-        🔵 B2_M14 : Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-        B2_M14-001 : Onboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-        B2_M14-002 : Introduction au conseil juridique
-        B2_M14-003 : Introduction à la conformité réglementaire
-        B2_M14-004 : Identification des problématiques juridiques
-        B2_M14-005 : Recherche juridique et documentation
-        B2_M14-006 : Analyse des risques juridiques
-        B2_M14-007 : Communication et présentation orale des recommandations
-        B2_M14-008 : Gestion des litiges contractuels
-        B2_M14-009 : Veille juridique et mise à jour des connaissances
-        B2_M14-010 : Auto-Evaluation - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-        B2_M14-011 : Application - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-        B2_M14-012 : Offboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-        🔵 B2_M15 : Gérer le budget de son service
-        B2_M15-001 : Onboarding - Gérer le budget de son service
-        B2_M15-002 : Budget prévisionnel : présentation et méthode
-        B2_M15-003 : Outils de suivi et de pilotage : tableaux, indicateurs
-        B2_M15-004 : Adapter les postes de dépense
-        B2_M15-005 : Gérer le budget alloué à un service de l'entreprise
-        B2_M15-006 : Suivi budgétaire et analyse
-        B2_M15-007 : Gestion des imprévus budgétaires
-        B2_M15-008 : Évaluation des performances budgétaires
-        B2_M15-009 : Communication dans la gestion budgétaire
-        B2_M15-010 : Étude de cas : Gestion budgétaire d'un service
-        B2_M15-011 : Auto-évaluation - Gérer le budget de son service
-        B2_M15-012 : Application - Gérer le budget de son service
-        B2_M15-013 : Offboarding : Synthèse de la gestion budgétaire
-        🔵 B2_M16 : Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-        B2_M16-001 : Onboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-        B2_M16-002 : Principes de base des contrats commerciaux
-        B2_M16-003 : Les formes juridiques des sociétés
-        B2_M16-004 : Rédaction et gestion des documents juridiques
-        B2_M16-005 : Focus sur les statuts juridiques - SARL
-        B2_M16-006 : Focus sur les statuts juridiques - SA
-        B2_M16-007 : Focus sur les statuts juridiques - SAS
-        B2_M16-008 : Impact des contrats commerciaux sur la gestion RH
-        B2_M16-009 : Participation aux assemblées générales et décisions collectives
-        B2_M16-010 : Offboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-        B2_M16-011 : Auto-évaluation - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-        B2_M16-012 : Application - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-        B2_M16-013 : Live 1 : Focus théorique sur le droit des contrats commerciaux
-        B2_M16-014 : Live 2 : Focus pratique sur les formes juridiques des sociétés
-        🔵 B2_M17 : Rédiger un document juridique et intégrer les LegalTech
-        B2_M17-001 : Les éléments d'un document juridique
-        B2_M17-002 : Les bonnes pratiques de la rédaction de documents juridiques
-        B2_M17-003 : La rédaction des documents pour un avocat
-        B2_M17-004 : La rédaction des documents pour un huissier
-        B2_M17-005 : La rédaction des documents pour un magistrat
-        B2_M17-006 : La rédaction des documents pour un notaire
-        B2_M17-007 : Intégrer les technologies juridiques dans la gestion contractuelle
-        🔵 B2_M18 : Manager une équipe d’un service juridique et transverse
-        B2_M18-001 : Onboarding - Manager une équipe d'un service juridique et transverse
-        B2_M18-002 : Identifier les compétences de l'équipe
-        B2_M18-003 : Fixer des objectifs pertinents
-        B2_M18-004 : Méthodes et outils de suivi des activités
-        B2_M18-005 : Application des méthodes de suivi
-        B2_M18-006 : Résolution de problèmes et gestion des conflits
-        B2_M18-007 : Gestion du temps et des priorités
-        B2_M18-008 : Gestion de projet au sein d'une équipe juridique
-        B2_M18-009 : Auto-Evaluation - Manager une équipe d'un service juridique et transverse
-        B2_M18-010 : Application - Manager une équipe d'un service juridique et transverse
-        B2_M18-011 : Offboarding - Manager une équipe d'un service juridique et transverse
-        🔵 B2_M19 : Diagnostiquer les pratiques RH au sein de l’organisation
-        B2_M19-001 : L'histoire et l'évolution de la fonction RH
-        B2_M19-002 : L'organisation du travail : évolutions et défis
-        B2_M19-003 : L'organisation de la fonction RH
-        B2_M19-004 : Le partage de la fonction RH
-        B2_M19-005 : Les défis de la fonction RH
-        B2_M19-006 : La place des RH dans l'architecture organisationnelle
-        B2_M19-007 : L'architecture RH au service de la stratégie
-        B2_M19-008 : Le climat social d'une entreprise
-        B2_M19-009 : Le baromètre social
-        B2_M19-010 : L'audit : définition
-        B2_M19-011 : L'audit organisationnel
-        B2_M19-012 : L'audit social
-        B2_M19-013 : Les orientations RH après audit social
-        B2_M19-014 : Application : Diagnostiquer les pratiques RH au sein de l’organisation
-        🔵 B2_M20 : Ingénierie Pédagogique et Scénarisation de la formation
-        B2_M20-001 : Utiliser les concepts de base de l’ingénierie pédagogique
-        B2_M20-002 : Les méthodes pédagogiques
-        B2_M20-003 : Les concept, modalités et démarches pédagogiques
-        B2_M20-004 : Les objectifs pédagogiques
-        B2_M20-005 : Les environnements et services numériques mobilisables
-        B2_M20-006 : Les principales obligations des organismes de formation sur le handicap
-        B2_M20-007 : Les étapes clés structurant un temps de formation
-        B2_M20-008 : La construction du scénario pédagogique
-        B2_M20-009 : Les actions de sensibilisation
-        B2_M20-010 : Application sur la formation aux problématiques et risques juridiques
-        🔵 B2_M21 : Piloter une politique d’inclusion dans une entreprise
-        B2_M21-001 : La politique d'inclusion en entreprise
-        B2_M21-002 : Les enjeux de la diversité en entreprise
-        B2_M21-003 : La lutte contre les discriminations
-        B2_M21-004 : L'égalité Femmes / Hommes
-        B2_M21-005 : La déconstruction des stéréotypes
-        B2_M21-006 : La prévention du harcèlement
-        B2_M21-007 : Les libertés individuelles dans l'entreprise
-        B2_M21-008 : Le référent handicap en entreprise
-        B2_M21-009 : La qualité de vie et des conditions de travail
-        B2_M21-010 : Le bonheur au travail
-        B2_M21-011 : Le management interculturel
-        B2_M21-012 : Le management intergénérationnel
-        B2_M21-013 : Application : Piloter une politique d'inclusion dans une entreprise
-        🟡 B3 : GESTION DES CONTENTIEUX ET PRÉCONTENTIEUX
-        🔵 B3_M1 : Connaître le droit du contrat de travail & Gérer la rupture (Rappel et approfondissement)
-        B3_M1-001 : La formation du contrat de travail
-        B3_M1-002 : L’exécution du contrat de travail
-        B3_M1-003 : Le contrat de travail à durée indéterminée
-        B3_M1-004 : Le CDD et le contrat de travail temporaire
-        B3_M1-005 : Le contrat de travail à temps partiel
-        B3_M1-006 : Les contrats de formation
-        B3_M1-007 : L’évolution des conditions d’emploi
-        B3_M1-008 : La gestion de la fin de CDD
-        B3_M1-009 : La gestion d'une démission
-        B3_M1-010 : La gestion d'un licenciement économique
-        B3_M1-011 : La gestion d'un départ à la retraite
-        B3_M1-012 : Les fins de contrats
-        B3_M1-013 : Établir les documents liés à la vie du contrat de travail
-        B3_M1-014 : La rédaction d'un CDI et d'un CDD
-        B3_M1-015 : Application : Etablir les documents administratifs
-        🔵 B3_M2 : Anticiper les risques de contentieux
-        B3_M2-001 : Onboarding - Anticiper les risques de contentieux
-        B3_M2-002 : Introduction à la cartographie des risques
-        B3_M2-003 : Identifier les risques juridiques
-        B3_M2-004 : Responsabilité contractuelle et lettres de mise en demeure
-        B3_M2-005 : Protocole transactionnel
-        B3_M2-006 : Modes Alternatifs de Règlement des Différends (MARD)
-        B3_M2-007 : Importance de l'archivage
-        B3_M2-008 : Auto-évaluation - Anticiper les risques de contentieux
-        B3_M2-009 : Application - Anticiper les risques de contentieux
-        B3_M2-010 : Offboarding - Anticiper les risques de contentieux
-        🔵 B3_M3 : Conseil stratégique en contentieux
-        B3_M3-001 : Onboarding - Conseil stratégique en contentieux
-        B3_M3-002 : Introduction au contentieux dans l’entreprise
-        B3_M3-003 : Analyse des risques et évaluation des preuves
-        B3_M3-004 : Conseil stratégique
-        B3_M3-005 : Stratégies contentieuses par domaine juridique
-        B3_M3-006 : Rédaction des écrits judiciaires
-        B3_M3-007 : Voies de recours
-        B3_M3-008 : Modalités et voies de recours
-        B3_M3-009 : Négociation et résolution alternative des conflits
-        B3_M3-010 : Stratégies de négociation avancées
-        B3_M3-011 : Auto-évaluation - Conseil stratégique en contentieux
-        B3_M3-012 : Application - Conseil stratégique en contentieux
-        B3_M3-013 : Offboarding - Conseil stratégique en contentieux
-        B3_M3-014 : Elaborer une stratégie de gestion de crise juridique
-        🔵 B3_M4 : Gestion des contentieux judiciaires
-        B3_M4-001 : Onboarding - Gestion des contentieux judiciaires
-        B3_M4-002 : Principes du procès civil en droit français
-        B3_M4-003 : Ordres de juridiction et compétences
-        B3_M4-004 : Règles de procédure civile et commerciale
-        B3_M4-005 : Règles de procédure prud’hommale
-        B3_M4-006 : Règles de procédure pénale
-        B3_M4-007 : Modes de preuve et exemples pratiques
-        B3_M4-008 : Exécution des décisions judiciaires
-        B3_M4-009 : Conclusion d'un accord transactionnel
-        B3_M4-010 : Évaluation des risques liés aux verdicts
-        B3_M4-011 : Stratégie contentieuse et rédaction de notes explicatives
-        B3_M4-012 : Auto-évaluation - Gestion des contentieux judiciaires
-        B3_M4-013 : Application - Gestion des contentieux judiciaires
-        B3_M4-014 : Offboarding - Gestion des contentieux judiciaires
-        B3_M4-015 : Piloter l’exécution des décisions judiciaires
+B0_____Fondamentaux du droit
+B0_M01___Mise à niveau en droit social
+B0_M01_001_La notion de droit du travail
+B0_M01_002_La formation du contrat de travail
+B0_M01_003_Maîtriser la rédaction d’un contrat de travail
+B0_M01_004_L’exécution du contrat de travail
+B0_M01_005_Le contrat de travail à durée indéterminée
+B0_M01_006_Le CDD et le contrat de travail temporaire
+B0_M01_007_Le contrat de travail à temps partiel
+B0_M01_008_Les contrats de formation
+B0_M01_009_La rédaction du contrat de travail
+B0_M01_010_Application : Etablir les contrats de travail
+B0_M01_011_Comment et pourquoi se former à gestion des parcours salariés
+B0_M01_012_Le recrutement
+B0_M01_013_Les formalités administratives d'embauche
+B0_M01_014_La suspension du contrat de travail
+B0_M01_015_L'édition des documents de suspension du contrat
+B0_M01_016_La rupture du contrat de travail : introduction
+B0_M01_017_Le licenciement
+B0_M01_018_Les autres modes de rupture du contrat de travail
+B0_M01_019_Les fins de contrat : indemnité de précarité, ICP, Indemnité RTT, et autres indemnités
+B0_M01_020_Les fins de contrat : rupture conventionnelle, départ et mise à la retraite
+B0_M01_021_Les formalités de rupture du contrat de travail
+B0_M01_022_L'édition des documents de fin de contrat
+B0_M01_023_Synthèse et application : Traiter les entrées et sorties des salariés
+B0_M02___Mise à niveau en droit - L’organisation judiciaire
+B0_M02_001_L'organisation judiciaire européenne
+B0_M02_002_L'organisation judiciaire nationale
+B0_M02_003_L'action en justice
+B0_M02_004_Les MARD
+B0_M02_005_Application : Comprendre l'organisation judiciaire
+B0_M03__Mise à niveau en droit - Propriété intellectuelle et industrielle
+B0_M03_001_La théorie du patrimoine
+B0_M03_002_La propriété
+B0_M03_003_Le fonds de commerce et le contrat de bail commercial
+B0_M03_004_La propriété industrielle : brevet, marque, dessins et modèles
+B0_M03_005_La propriété littéraire et artistique : le droit d'auteur
+B0_M03_006_Le droit de l'informatique et de la propriété industrielle
+B0_M03_007_La protection juridique des sites internet et des créations numériques
+B0_M03_008_Les règles juridiques d'utilisation d'internet
+B0_M03_009_Application : Caractériser les biens
+B0_M04__Mise à niveau en droit - Théorie générale du contrat
+B0_M04_001_La théorie générale du contrat
+B0_M04_002_La validité du contrat
+B0_M04_003_Les clauses contractuelles particulières
+B0_M04_004_L'exécution du contrat
+B0_M04_005_L'inexécution du contrat
+B0_M04_006_Application : Maîtriser la théorie générale du contrat
+B0_M05__Mise à niveau en droit - Les contrats de l’entreprise
+B0_M05_001_Le contrat de vente du fonds de commerce
+B0_M05_002_Le contrat de location-gérance du fonds de commerce
+B0_M05_003_Le contrat de vente
+B0_M05_004_Les contrats de consommation
+B0_M05_005_Le compte de dépôt bancaire
+B0_M05_006_Les contrats de crédit aux entreprises
+B0_M05_007_Les sûretés
+B0_M06__Mise à niveau en droit - L’entreprise et ses responsabilités
+B0_M06_001_Application : Maîtriser les contrats de l'entreprise
+B0_M06_002_Les responsabilités civile et pénale
+B0_M06_003_La responsabilité pénale
+B0_M06_004_La procédure pénale
+B0_M06_005_La responsabilité civile extracontractuelle
+B0_M06_006_Les responsabilités du fait des produits défectueux et du préjudice environnemental
+B0_M06_007_Application : L'entreprise et ses responsabilités
+B0_M07__Mise à niveau en droit des sociétés
+B0_M07_001_Les notions d'entreprise et de société
+B0_M07_002_Les éléments constitutifs du contrat de société
+B0_M07_003_Le contrat de société
+B0_M07_004_La constitution de la société
+B0_M07_005_La société en formation
+B0_M07_006_Les attributs de la personnalité morale
+B0_M07_007_Les notions d'intérêt social et d'abus de droit
+B0_M07_008_Les organes de gestion
+B0_M07_009_Les associés
+B0_M07_010_Le contrôle de la société
+B0_M07_011_Le statut du commissaire aux comptes
+B0_M07_012_La dissolution et la liquidation des sociétés
+B0_M07_013_La transformation des sociétés
+B0_M07_014_Les sociétés sans personnalité juridique
+B0_M07_015_Application : Comprendre la nature et le fonctionnement d'une entreprise en société
+B0_M07_016_Les formes juridiques des sociétés
+B0_M07_017_Rédaction et gestion des documents juridiques
+B0_M07_018_Focus sur les statuts juridiques - SARL
+B0_M07_019_Focus sur les statuts juridiques - SA
+B0_M07_020_Focus sur les statuts juridiques - SAS
+B0_M08___Mise à niveau en droit fiscal
+B0_M08__001_Les caractéristiques et les sources du droit fiscal
+B0_M08__002_La classification des impôts et taxes
+B0_M08__003_Organisation et rôle de l'administration fiscale et veille fiscale
+B0_M08__004_Application : Introduire le droit fiscal
+B0_M09___Mise à niveau en droit de la concurrence
+B0_M09__001_Le contrôle des concentrations
+B0_M09__002_Les pratiques anticoncurrentielles
+B0_M09__003_L'entreprise et la concurrence déloyale
+B0_M09__004_La transparence et les pratiques restrictives de concurrence
+B0_M09__005_Application : Maîtriser les situations contraires au droit de la concurrence
+B0_M10___Mise à niveau en droit des procédures collectives (sauvegarde, redressement, liquidation)
+B0_M10__001_L'évolution du droit de l'entreprise en difficulté
+B0_M10__002_La prévention des difficultés de l'entreprise
+B0_M10__003_Le traitement amiable des difficultés par la procédure de conciliation
+B0_M10__004_Le traitement judiciaire par les procédures collectives
+B0_M10__005_La procédure de sauvegarde
+B0_M10__006_Le sort des créanciers en période d'observation
+B0_M10__007_Le plan de sauvegarde ordinaire et la sauvegarde accélérée
+B0_M10__008_La procédure de redressement judiciaire
+B0_M10__009_La procédure de liquidation judiciaire
+B0_M10__010_Application : Pérenniser l'entreprise en difficulté
+B0_M11___Mise à niveau en droit de l’intelligence artificielle
+B0_M11__001_Un droit de l'IA dans les pratiques de l'entreprise
+B1_____Pilotage stratégique et opérationnel de la fonction juridique et RH
+B1_M01__Optimiser et présenter la veille
+B1_M01_001_Délimiter et structurer une veille pour une entreprise
+B1_M01_002_Développer un réseau d’experts pour une veille partagée
+B1_M02__Réaliser une veille juridique et sociale
+B1_M02_001_Les différents types de veille
+B1_M02_002_Introduction : la notion de veille juridique
+B1_M02_003_Comment faire de la veille juridique
+B1_M02_004_Les principaux sites d'actualité juridique
+B1_M02_005_Les différents flux juridiques officiels
+B1_M02_006_La réalisation de veille juridique
+B1_M02_007_Les outils pour une veille juridique efficace
+B1_M02_008_Le pilotage de veille juridique 
+B1_M02_009_Les grandes tendances juridiques en France et leurs effets sur l’organisation
+B1_M03__Procéder de la veille juridique à la recommandation stratégique
+B1_M03_001_Onboarding - Procéder de la veille juridique à la recommandation stratégique
+B1_M03_002_Utilisation de Village Justice et experts LinkedIn
+B1_M03_003_Présentation des bases de données juridiques et outils de veille
+B1_M03_004_Méthodologie de recherche et d'organisation de la veille
+B1_M03_005_Techniques de communication écrite
+B1_M03_006_Introduction aux bases de données juridiques
+B1_M03_007_Analyse des évolutions législatives
+B1_M03_008_Application - Recherche et présentation d'informations
+B1_M03_009_Reporting extra-financier et directives
+B1_M03_010_Mise en situation pratique de la veille juridique
+B1_M03_011_Impact des évolutions législatives internationales
+B1_M03_012_Outils numériques avancés pour la veille juridique
+B1_M03_013_Auto-Evaluation - Procéder de la veille juridique à la recommandation stratégique
+B1_M03_014_Application - Procéder de la veille juridique à la recommandation stratégique
+B1_M03_015_Offboarding - Procéder de la veille juridique à la recommandation stratégique
+B1_M04__La veille juridique en pratique
+B1_M04_001_Prise de connaissance et méthodologie d'utilisation des sites institutionnels
+B1_M04_002_Réaliser une note interne à partir d'une veille juridique en droit des données personnelles
+B1_M04_003_Réaliser une note interne à partir d'une veille juridique en matière de TVA
+B1_M04_004_Réaliser une note interne à partir d'une veille juridique en droit des contrats
+B1_M05__Définir la stratégie juridique de l’entreprise
+B1_M06__Intégrer des LegalTech et de l’IA dans la stratégie juridique
+B1_M07__Maîtriser la méthodologie complète de l’audit juridique
+B1_M08__Elaborer un plan d’action correctives et préventives
+B1_M09__Digitaliser et automatiser les processus juridiques
+B1_M10__Concevoir et rédiger des politiques de conformité
+B1_M11__Déployer et piloter les dispositifs de conformité
+B1_M12__Optimiser et sécuriser l’archivage
+B1_M12_001_Optimiser et sécuriser l’archivage
+B1_M12_002_Introduction au RGPD et archivage numérique
+B1_M12_003_Les règles d’archivage temporaire et l’anonymisation
+B1_M12_004_Minimisation des données et droit d’accès
+B1_M12_005_Sécurisation des accès et des données archivées
+B1_M12_006_Conséquences des violations de données
+B1_M12_007_Durées de conservation légale des documents
+B1_M12_008_Exemples de solutions techniques disponibles
+B1_M12_009_Élaboration d’une procédure d’archivage numérique
+B1_M12_010_Présentation des procédures d’archivage par secteur d’activité
+B1_M12_011_Auto-Evaluation - Optimiser et sécuriser l’archivage
+B1_M12_012_Application - Optimiser et sécuriser l’archivage
+B1_M12_013_Offboarding - Optimiser et sécuriser l’archivage
+B1_M13__Piloter une équipe RH
+B1_M13_001_Une fonction RH alignée avec les attentes et besoins de ses clients ?
+B1_M13_002_DRH et défis digitaux
+B1_M13_003_La mesure de la performance de la fonction RH
+B1_M13_004_Décliner la stratégie en action
+B1_M13_005_Des compétences repérées à l'équipe opérationnelle
+B1_M13_006_L'identification des compétences
+B1_M13_007_Évaluer le niveau de compétences
+B1_M13_008_Débriefer toute acquisition de compétence
+B1_M13_009_Acter la compétence acquise
+B1_M13_010_Talent Review
+B1_M13_011_Capitaliser sur l’expérience, tracer une roadmap
+B1_M13_012_Application : Piloter une équipe RH
+B1_M14__Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
+B1_M14_001_Les théories de l'organisation au service du management
+B1_M14_002_Le management et le manager
+B1_M14_003_Le management des individus et des groupes
+B1_M14_004_Le management à distance
+B1_M14_005_Les plateformes de travail collaboratives
+B1_M14_006_Fixer des objectifs SMART
+B1_M14_007_L'utilité du suivi de la performance
+B1_M14_008_Les indicateurs de suivi selon les objectifs
+B1_M14_009_La fixation des objectifs de l'équipe
+B1_M14_010_Le suivi des objectifs de l'équipe
+B1_M14_011_Faire faire sans se substituer
+B1_M14_012_Intégrer la vision (cadre de référence) de l’autre
+B1_M14_013_Obtenir régulièrement
+B1_M14_014_Application : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
+B1_M15__Comprendre et analyser des situations en droit de la sécurité sociale
+B1_M15_001_Onboarding vidéo : Comprendre et analyser des situations en droit de la sécurité sociale
+B1_M15_002_Introduction au droit de la sécurité sociale
+B1_M15_003_Le droit européen de la sécurité sociale
+B1_M15_004_Les régimes de la sécurité sociale
+B1_M15_005_Les régimes complémentaires de sécurité sociale
+B1_M15_006_Le contentieux en droit de la sécurité sociale
+B1_M15_007_La veille juridique et actualité
+B1_M15_008_Offboarding vidéo : Synthèse - Comprendre et analyser des situations en droit de la sécurité sociale
+B1_M15_009_Application : Comprendre et analyser des situations en droit de la sécurité sociale
+B1_M15_010_Auto-évaluation : Comprendre et analyser des situations en droit de la sécurité sociale
+B1_M16__Construire une politique de compensations and benefits
+B1_M16_001_La politique de rémunération
+B1_M16_002_La politique de rémunération et les politiques RH
+B1_M16_003_La politique de rémunération : élaborer et piloter
+B1_M16_004_La mise en oeuvre de sa politique salariale
+B1_M16_005_L'optimisation de sa politique salariale
+B1_M16_006_L'évaluation d'impact de la politique de rémunération
+B1_M16_007_Le Comp & Ben Manager
+B1_M16_008_Le benchmark de rémunération
+B1_M16_009_Les outils de benchmark pour s’assurer de la meilleure compétitivité en matière de rémunération
+B1_M16_010_Les primes et avantages alliés pour convaincre
+B1_M16_011_L’entretien de décision salariale
+B1_M16_012_Présentation de la rémunération brute et le décompte du temps de travail
+B1_M16_013_La rémunération brute : le salaire de base, les primes et la retenue pour absence
+B1_M16_014_La rémunération brute : le salaire de base, les primes et la retenue pour absence (Type: Leçons)
+B1_M16_015_Cas pratique - Salaire de base (Type: Exercices)
+B1_M16_016_Cas pratique - Primes et indemnités (Type: Exercices)
+B1_M16_017_La rémunération brute : les avantages en nature
+B1_M16_018_Les salaires net, imposable et à payer
+B1_M16_019_L’association des salariés aux performances de l’entreprise, généralités
+B1_M16_020_La protection sociale, généralités
+B1_M16_021_La protection sociale, généralités (Type: Leçons)
+B1_M16_022_Applications | Généralités (Type: Exercices)
+B1_M16_023_L’assurance maladie du régime général
+B1_M16_024_L’assurance maladie du régime général (Type: Leçons)
+B1_M16_025_Cas Analyse d'une documentation juridique (Type: Exercices)
+B1_M16_026_Cas Anthony | La branche assurance maladie du régime général (Type: Exercices)
+B1_M16_027_Cas Marie Line | La branche assurance maladie du régime général (Type: Exercices)
+B1_M16_028_Application : Construire une politique de compensations and benefits
+B1_M17__Piloter le changement structurel d’une entreprise
+B1_M17_001_Les préalables à une stratégie RSE
+B1_M17_002_Le cadre législatif et réglementaire
+B1_M17_003_Quelques obligations réglementaires relatives à la RSE en France
+B1_M17_004_Des actions volontaristes possibles relatives à la RSE
+B1_M17_005_La carte de transformation
+B1_M17_006_La communication en externe et en interne sur la RSE
+B1_M17_007_L'entrepreneuriat responsable et durable
+B1_M17_008_Les enjeux de la transformation digitale
+B1_M17_009_Les deux chantiers préliminaires à la TD
+B1_M17_010_Application : Piloter le changement structurel d'une entreprise
+B1_M18__Participer au déploiement d’un projet de transformation au sein de l’organisation
+B1_M18_001_Les projets de transformation
+B1_M18_002_Le diagnostic de la transformation
+B1_M18_003_Les évaluations des impacts
+B1_M18_004_Les interactions et les humains
+B1_M18_005_Le DRH project manager
+B1_M18_006_Les modes de gestion de projet dits "classiques"
+B1_M18_007_Les méthodologies agiles
+B1_M18_008_Les processus et les disciplines de la gestion de projet selon le PMBOK
+B1_M18_009_Le pilotage du projet
+B1_M18_010_Les acteurs et les ressources du projet
+B1_M18_011_La première découpe du projet
+B1_M18_012_La construction du planning
+B1_M18_013_Le rétroplanning
+B1_M18_014_La gestion du budget du projet
+B1_M18_015_Application : Faire face aux évolutions RH
+B1_M19__Piloter les impacts en matière de droit de la responsabilité
+B1_M19_001_Onboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
+B1_M19_002_Les bases du droit de la responsabilité
+B1_M19_003_La responsabilité des dirigeants et des administrateurs
+B1_M19_004_La responsabilité des professionnel
+B1_M19_005_La responsabilité environnementale
+B1_M19_006_La responsabilité en matière de données personnelles
+B1_M19_007_La responsabilité pénale des entreprises
+B1_M19_008_Offboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
+B1_M19_009_Application : Piloter les impacts en matière de droit de la responsabilité
+B1_M19_010_Auto-évaluation : Piloter les impacts en matière de droit de la responsabilité
+B2_____Accompagnement juridique et RH des opérations de l’entreprise et de ses acteurs internes
+B2_M01__Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+B2_M01_001_Onboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+B2_M01_002_Introduction au conseil juridique
+B2_M01_003_Introduction à la conformité réglementaire
+B2_M01_004_Identification des problématiques juridiques
+B2_M01_005_Recherche juridique et documentation
+B2_M01_006_Analyse des risques juridiques
+B2_M01_007_Communication et présentation orale des recommandations
+B2_M01_008_Gestion des litiges contractuels
+B2_M01_009_Veille juridique et mise à jour des connaissances
+B2_M01_010_Auto-Evaluation - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+B2_M01_011_Application - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+B2_M01_012_Offboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+B2_M02__Piloter le changement structurel d’une entreprise
+B2_M02_001_Le cadre législatif et réglementaire
+B2_M02_002_Des actions volontaristes possibles relatives à la RSE
+B2_M02_003_La carte de transformation
+B2_M02_004_La communication en externe et en interne sur la RSE
+B2_M02_005_Application : Piloter le changement structurel d'une entreprise
+B2_M03__Gérer le budget de son service
+B2_M03_001_Onboarding - Gérer le budget de son service
+B2_M03_002_Budget prévisionnel : présentation et méthode
+B2_M03_003_Outils de suivi et de pilotage : tableaux, indicateurs
+B2_M03_004_Adapter les postes de dépense
+B2_M03_005_Gérer le budget alloué à un service de l’entreprise
+B2_M03_006_Suivi budgétaire et analyse
+B2_M03_007_Gestion des imprévus budgétaires
+B2_M03_008_Évaluation des performances budgétaires
+B2_M03_009_Communication dans la gestion budgétaire
+B2_M03_010_Étude de cas : Gestion budgétaire d'un service
+B2_M03_011_Auto-évaluation - Gérer le budget de son service
+B2_M03_012_Application - Gérer le budget de son service
+B2_M03_013_Offboarding : Synthèse de la gestion budgétaire
+B2_M04__Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+B2_M04_001_Onboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+B2_M04_002_Principes de base des contrats commerciaux
+B2_M04_003_Les formes juridiques des sociétés
+B2_M04_004_Rédaction et gestion des documents juridiques
+B2_M04_005_Focus sur les statuts juridiques - SARL
+B2_M04_006_Focus sur les statuts juridiques - SA
+B2_M04_007_Focus sur les statuts juridiques - SAS
+B2_M04_008_Impact des contrats commerciaux sur la gestion RH
+B2_M04_009_Participation aux assemblées générales et décisions collectives
+B2_M04_010_Offboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+B2_M04_011_Auto-évaluation - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+B2_M04_012_Application - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+B2_M04_013_Live 1 : Focus théorique sur le droit des contrats commerciaux
+B2_M04_014_Live 2 : Focus pratique sur les formes juridiques des sociétés
+B2_M05__Rédiger un document juridique
+B2_M05_001_Les éléments d'un document juridique
+B2_M05_002_Les bonnes pratiques de la rédaction de documents juridiques
+B2_M05_003_La rédaction des documents pour un avocat
+B2_M05_004_La rédaction des documents pour un huissier
+B2_M05_005_La rédaction des documents pour un magistrat
+B2_M05_006_La rédaction des documents pour un notaire
+B2_M06__Intégrer les technologies juridiques dans la gestion contractuelle
+B2_M07__Utiliser les concepts de base de l’ingénierie pédagogique
+B2_M07_001_Les méthodes pédagogiques
+B2_M07_002_Les concept, modalités et démarches pédagogiques
+B2_M08__Scénariser la formation
+B2_M08_001_Les objectifs pédagogiques
+B2_M08_002_Les environnements et services numériques mobilisables
+B2_M08_003_Les principales obligations des organismes de formation sur le handicap
+B2_M08_004_Les étapes clés structurant un temps de formation
+B2_M08_005_La construction du scénario pédagogique
+B2_M08_006_Les actions de sensibilisation
+B2_M08_007_Application sur la formation aux problématiques et risques juridiques
+B2_M09__Piloter une politique d’inclusion dans une entreprise
+B2_M09_001_La politique d'inclusion en entreprise
+B2_M09_002_Les enjeux de la diversité en entreprise
+B2_M09_003_La lutte contre les discriminations
+B2_M09_004_L'égalité Femmes / Hommes
+B2_M09_005_La déconstruction des stéréotypes
+B2_M09_006_La prévention du harcèlement
+B2_M09_007_Les libertés individuelles dans l'entreprise
+B2_M09_008_Le référent handicap en entreprise
+B2_M09_009_La qualité de vie et des conditions de travail
+B2_M09_010_Le bonheur au travail
+B2_M09_011_Le management interculturel
+B2_M09_012_Le management intergénérationnel
+B2_M09_013_Application : Piloter une politique d'inclusion dans une entreprise
+B2_M10__Manager une équipe d’un service juridique et transverse
+B2_M10_001_Onboarding - Manager une équipe d'un service juridique et transverse
+B2_M10_002_Identifier les compétences de l'équipe
+B2_M10_003_Fixer des objectifs pertinents
+B2_M10_004_Méthodes et outils de suivi des activités
+B2_M10_005_Application des méthodes de suivi
+B2_M10_006_Résolution de problèmes et gestion des conflits
+B2_M10_007_Gestion du temps et des priorités
+B2_M10_008_Gestion de projet au sein d'une équipe juridique
+B2_M10_009_Auto-Evaluation - Manager une équipe d'un service juridique et transverse
+B2_M10_010_Application - Manager une équipe d'un service juridique et transverse
+B2_M10_011_Offboarding - Manager une équipe d'un service juridique et transverse
+B2_M11__Diagnostiquer les pratiques RH au sein de l’organisation
+B2_M11_001_L'histoire et l'évolution de la fonction RH
+B2_M11_002_L'organisation du travail : évolutions et défis
+B2_M11_003_L'organisation de la fonction RH
+B2_M11_004_Le partage de la fonction RH
+B2_M11_005_Les défis de la fonction RH
+B2_M11_006_La place des RH dans l'architecture organisationnelle
+B2_M11_007_L'architecture RH au service de la stratégie
+B2_M11_008_Le climat social d'une entreprise
+B2_M11_009_Le baromètre social
+B2_M11_010_L'audit : définition
+B2_M11_011_L'audit organisationnel
+B2_M11_012_L'audit social
+B2_M11_013_Les orientations RH après audit social
+B2_M11_014_Application : Diagnostiquer les pratiques RH au sein de l’organisation
+B2_M12__Connaître le droit du contrat de travail
+B2_M12_001_La formation du contrat de travail
+B2_M12_002_L’exécution du contrat de travail
+B2_M12_003_Le contrat de travail à durée indéterminée
+B2_M12_004_Le CDD et le contrat de travail temporaire
+B2_M12_005_Le contrat de travail à temps partiel
+B2_M12_006_Les contrats de formation
+B2_M12_007_L’évolution des conditions d’emploi
+B2_M13__Gérer la rupture du contrat de travail
+B2_M13_001_La gestion de la fin de CDD
+B2_M13_002_La gestion d'une démission
+B2_M13_003_La gestion d'un licenciement économique
+B2_M13_004_La gestion d'un départ à la retraite
+B2_M13_005_Les fins de contrats
+B2_M14__Établir les documents liés à la vie du contrat de travail
+B2_M14_001_La rédaction d'un CDI et d'un CDD
+B2_M14_002_Application : Etablir les documents administratifs
+B3_____Gestion des précontentieux et des contentieux
+B3_M01__Anticiper les risques de contentieux
+B3_M01_001_Onboarding - Anticiper les risques de contentieux
+B3_M01_002_Introduction à la cartographie des risques
+B3_M01_003_Identifier les risques juridiques
+B3_M01_004_Responsabilité contractuelle et lettres de mise en demeure
+B3_M01_005_Protocole transactionnel
+B3_M01_006_Modes Alternatifs de Règlement des Différends (MARD)
+B3_M01_007_Importance de l'archivage
+B3_M01_008_Auto-évaluation - Anticiper les risques de contentieux
+B3_M01_009_Application - Anticiper les risques de contentieux
+B3_M01_010_Offboarding - Anticiper les risques de contentieux
+B3_M02__Conseil stratégique en contentieux
+B3_M02_001_Onboarding - Conseil stratégique en contentieux
+B3_M02_002_Introduction au contentieux dans l’entreprise
+B3_M02_003_Analyse des risques et évaluation des preuves
+B3_M02_004_Conseil stratégique
+B3_M02_005_Stratégies contentieuses par domaine juridique
+B3_M02_006_Rédaction des écrits judiciaires
+B3_M02_007_Voies de recours
+B3_M02_008_Modalités et voies de recours
+B3_M02_009_Négociation et résolution alternative des conflits
+B3_M02_010_Stratégies de négociation avancées
+B3_M02_011_Auto-évaluation - Conseil stratégique en contentieux
+B3_M02_012_Application - Conseil stratégique en contentieux
+B3_M02_013_Offboarding - Conseil stratégique en contentieux
+B3_M03__Elaborer une stratégie de gestion de crise juridique
+B3_M04__Gestion des contentieux judiciaires
+B3_M04_001_Onboarding - Gestion des contentieux judiciaires
+B3_M04_002_Principes du procès civil en droit français
+B3_M04_003_Ordres de juridiction et compétences
+B3_M04_004_Règles de procédure civile et commerciale
+B3_M04_005_Règles de procédure prud’hommale
+B3_M04_006_Règles de procédure pénale
+B3_M04_007_Modes de preuve et exemples pratiques
+B3_M04_008_Exécution des décisions judiciaires
+B3_M04_009_Conclusion d'un accord transactionnel
+B3_M04_010_Évaluation des risques liés aux verdicts
+B3_M04_011_Stratégie contentieuse et rédaction de notes explicatives
+B3_M04_012_Auto-évaluation - Gestion des contentieux judiciaires
+B3_M04_013_Application - Gestion des contentieux judiciaires
+B3_M04_014_Offboarding - Gestion des contentieux judiciaires
+B3_M05__Piloter l’exécution des décisions judiciaires
 `;
 
 /* ==============================
    Constantes / état
    ============================== */
-const STORAGE_KEY = 'mba_juriste_progress_v1';
-const BLOCK_TITLES = {
-  'B0': "B0 : Fondamentaux du Droit",
-  'B1': "B1 : Droit Social",
-  'B2': "B2 : Pilotage & RH",
-  'B3': "B3 : Contentieux"
+const STORAGE_KEY = 'mba_juriste_progress_v2'; // nouvelle clé pour la nouvelle liste
+const BLOCK_LABELS = {
+  'B0': "B0 : Fondamentaux du droit",
+  'B1': "B1 : Pilotage stratégique & RH",
+  'B2': "B2 : Accompagnement juridique & RH",
+  'B3': "B3 : (Pré)contentieux"
 };
 
 let courseStructure = [];
@@ -523,7 +525,7 @@ let completionState = {};
 let totalLessons = 0;
 
 /* ==============================
-   Utils: stockage
+   Stockage
    ============================== */
 function loadCompletionState() {
   try {
@@ -539,43 +541,54 @@ function saveCompletionState(state) {
 }
 
 /* ==============================
-   Parsing robuste
+   Parsing (format underscore)
    ============================== */
 function parseCourseData(data) {
-  const lines = data.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = data.split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
   const structure = [];
   let currentBlock = null;
   let currentModule = null;
   totalLessons = 0;
 
   for (const line of lines) {
-    // Bloc
-    if (line.startsWith('🟡')) {
-      // Exemple: "🟡 B0 : Titre"
-      const beforeColon = line.split(':')[0] || '';
-      const id = beforeColon.replace('🟡', '').trim(); // -> "B0"
-      const title = line.split(':').slice(1).join(':').trim(); // tout après le premier ':'
-      currentBlock = { id, title: title || id, type: 'block', modules: [] };
+    // 1) Bloc : B0_____Titre
+    let m = line.match(/^((B\d+))_+(.+)$/);
+    // ATTENTION : ceci matche aussi des modules/leçons (qui commencent par Bx_), donc
+    // on ne valide bloc que si ce n'est PAS un module/leçon :
+    if (m && !/^B\d+_M\d{2}/.test(line)) {
+      const id = m[1];                 // B0
+      const title = m[3].trim();       // Titre du bloc
+      currentBlock = { id, title, type: 'block', modules: [] };
       structure.push(currentBlock);
       currentModule = null;
       continue;
     }
-    // Module
-    if (line.startsWith('🔵') && currentBlock) {
-      // Exemple: "🔵 B0_M1 : Titre module"
-      const beforeColon = line.split(':')[0] || '';
-      const id = beforeColon.replace('🔵', '').trim(); // -> "B0_M1"
-      const title = line.split(':').slice(1).join(':').trim();
-      currentModule = { id, title: title || id, type: 'module', lessons: [] };
+
+    // 2) Module : B0_M01___Titre
+    m = line.match(/^((B\d+_M\d{2}))_+(.+)$/);
+    if (m) {
+      if (!currentBlock) {
+        console.warn('Module trouvé sans bloc courant :', line);
+        continue;
+      }
+      const id = m[1];            // B0_M01
+      const title = m[3].trim();  // Titre du module
+      currentModule = { id, title, type: 'module', lessons: [] };
       currentBlock.modules.push(currentModule);
       continue;
     }
-    // Leçon
-    const lessonMatch = /^([A-Z]\d+_M\d+-\d{3})\s*:\s*(.+)$/.exec(line);
-    if (lessonMatch && currentModule) {
-      const [, id, title] = lessonMatch;
+
+    // 3) Leçon : B0_M01_001_Titre
+    m = line.match(/^((B\d+_M\d{2}_\d{3}))_(.+)$/);
+    if (m && currentModule) {
+      const id = m[1];            // B0_M01_001
+      const title = m[3].trim();  // Titre de la leçon
       currentModule.lessons.push({ id, title, type: 'lesson' });
       totalLessons++;
+      continue;
     }
   }
   return structure;
@@ -659,9 +672,11 @@ function createBlockElement(block) {
   wrap.id = `block-${block.id}`;
   wrap.className = "course-block space-y-4";
 
+  const label = BLOCK_LABELS[block.id] || `${block.id} : ${block.title}`;
+
   wrap.innerHTML = `
     <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-800 mb-6 mt-4 flex items-center">
-      <span class="text-3xl mr-3">🟡</span>${block.title}
+      <span class="text-3xl mr-3">🟡</span>${label}
     </h2>
     <div class="space-y-4" id="modules-container-${block.id}"></div>
   `;
@@ -694,7 +709,7 @@ function createTabButtons() {
     btn.type = 'button';
     btn.dataset.blockId = block.id;
     btn.className = `tab-button px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${idx===0?'text-blue-600 border-blue-600':'text-gray-500 border-transparent hover:border-gray-300'}`;
-    btn.textContent = BLOCK_TITLES[block.id] || block.id;
+    btn.textContent = (BLOCK_LABELS[block.id] || block.title);
     btn.onclick = () => switchTab(block.id);
     nav.appendChild(btn);
   });
