@@ -1,160 +1,77 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBA Juriste d'entreprise en Droit Social - Suivi</title>
-    <!-- Chargement de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configuration de la police Inter -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-        }
-        /* Style pour masquer temporairement le contenu avant le chargement */
-        #app-container {
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        .text-shadow-custom {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        /* Style pour le bouton scroll-to-top */
-        #scroll-to-top {
-            transition: opacity 0.3s, transform 0.3s;
-        }
-    </style>
-    <!-- Importations Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MBA Juriste d'entreprise en Droit Social - Suivi</title>
 
-        // Définition des variables globales (fournies par l'environnement Canvas)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // Initialisation de Firebase
-        let app, db, auth;
-        let userId = null;
-        let isAuthReady = false;
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        // Activer les logs de débogage pour Firestore
-        setLogLevel('debug');
-
-        if (firebaseConfig) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            window.doc = doc;
-            window.getDoc = getDoc;
-            window.setDoc = setDoc;
-            window.db = db;
-            window.appId = appId;
-
-        } else {
-            console.error("Configuration Firebase non disponible.");
-        }
-
-        async function authenticateAndSetup() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    // Tente de se connecter anonymement si le token n'est pas fourni ou est invalide
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                // En cas d'erreur (même après l'échec de la connexion anonyme),
-                // onAuthStateChanged prendra le relais avec un utilisateur null.
-                console.error("Erreur critique d'authentification Firebase:", error);
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Authentification réussie (token ou anonyme)
-                userId = user.uid;
-                window.userId = userId;
-                console.log("Authentification Firebase réussie. Sauvegarde activée.");
-            } else {
-                // Si aucune authentification n'est résolue, ne pas définir d'UID pour Firestore.
-                userId = null; 
-                window.userId = null;
-                console.warn("Authentification Firebase non résolue. Sauvegarde désactivée.");
-            }
-            isAuthReady = true;
-
-            // Démarrer l'application principale (cette fonction est appelée une fois l'état d'auth connu)
-            if (window.initApp) {
-                window.initApp();
-            }
-        });
-
-        if (auth) {
-            authenticateAndSetup();
-        } else {
-            // Si auth n'a pas pu être initialisé (ex: config manquante), on démarre l'app sans persistance.
-            if (window.initApp) {
-                window.initApp();
-            }
-        }
-    </script>
+  <!-- Police Inter -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    :root { color-scheme: light; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f7f7f7;
+    }
+    /* Masquer le contenu avant init */
+    #app-container { opacity: 0; transition: opacity .5s; }
+    .text-shadow-custom { text-shadow: 2px 2px 4px rgba(0,0,0,.1); }
+    /* Scroll-to-top */
+    #scroll-to-top { transition: opacity .3s, transform .3s; }
+  </style>
 </head>
 <body>
-
 <div id="app-container" class="min-h-screen p-4 sm:p-8 pt-4 pb-20 transition-opacity duration-500">
-    <header class="mb-6 sticky top-0 bg-white shadow-lg rounded-xl z-20 p-4 border-b-4 border-amber-500">
-        <a href="https://www.studi.com/fr/formation/juridique/mba-juriste-dentreprise-en-droit-social" target="_blank" class="block">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom hover:text-amber-700 transition-colors">
-                MBA Juriste d'entreprise en Droit Social
-            </h1>
-        </a>
-        <p class="text-lg sm:text-xl font-semibold text-amber-600 mb-4">
-            Suivi du Programme de la formation
-        </p>
+  <header class="mb-6 sticky top-0 bg-white shadow-lg rounded-xl z-20 p-4 border-b-4 border-amber-500">
+    <a href="https://www.studi.com/fr/formation/juridique/mba-juriste-dentreprise-en-droit-social" target="_blank" class="block">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom hover:text-amber-700 transition-colors">
+        MBA Juriste d'entreprise en Droit Social
+      </h1>
+    </a>
+    <p class="text-lg sm:text-xl font-semibold text-amber-600 mb-4">
+      Suivi du Programme de la formation
+    </p>
 
-        <!-- Barre de Progression -->
-        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-            <div id="progress-bar" class="bg-amber-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
-        </div>
-        <div class="text-right text-sm font-medium text-blue-800">
-            <span id="progress-text">0/0 leçons complétées (0%)</span>
-        </div>
-        
-        <!-- Navigation par Onglets des Blocs -->
-        <div id="tab-navigation" class="mt-4 flex flex-wrap border-b border-gray-200">
-            <!-- Les boutons d'onglets seront insérés ici par JS -->
-        </div>
-    </header>
-
-    <!-- Conteneur pour la liste des cours -->
-    <div id="course-list" class="space-y-6">
-        <div class="text-center p-8 text-lg text-gray-500" id="loading-indicator">Chargement des données de progression... ⏳</div>
-        <!-- Les blocs de cours seront insérés ici -->
+    <!-- Barre de progression -->
+    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+      <div id="progress-bar" class="bg-amber-500 h-4 rounded-full transition-all duration-500 ease-out" style="width:0%"></div>
     </div>
+    <div class="text-right text-sm font-medium text-blue-800">
+      <span id="progress-text">0/0 leçons complétées (0%)</span>
+    </div>
+
+    <!-- Onglets -->
+    <div id="tab-navigation" class="mt-4 flex flex-wrap gap-2 border-b border-gray-200"></div>
+  </header>
+
+  <!-- Liste des cours -->
+  <div id="course-list" class="space-y-6">
+    <div class="text-center p-8 text-lg text-gray-500" id="loading-indicator">
+      Chargement des données de progression... ⏳
+    </div>
+  </div>
 </div>
 
-<!-- Bouton Remonter en Haut -->
-<button id="scroll-to-top" 
+<!-- Bouton remonter -->
+<button id="scroll-to-top"
         class="fixed bottom-4 right-4 bg-blue-700 hover:bg-blue-800 text-white p-3 rounded-full shadow-lg z-30 opacity-0 transform translate-y-4"
-        onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-    </svg>
+        aria-label="Remonter en haut"
+        title="Remonter en haut"
+        onclick="window.scrollTo({top:0, behavior:'smooth'})">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+  </svg>
 </button>
 
 <script>
-    // --- Définition de la Structure du Cours (mise à jour) ---
-    const COURSE_TITLE = "MBA Juriste d'entreprise en Droit Social";
-
-    // Structure unique et nettoyée
-    const COURSE_DATA_RAW = `
+/* ==============================
+   Données du cursus (brutes)
+   ============================== */
+const COURSE_TITLE = "MBA Juriste d'entreprise en Droit Social";
+const COURSE_DATA_RAW = `
         🟡 B0 : FONDAMENTAUX JURIDIQUES DE L'ENTREPRISE
         🔵 B0_M1 : Mise à niveau en droit - Les contrats de l’entreprise
         B0_M1-001 : Le contrat de vente du fonds de commerce
@@ -588,295 +505,244 @@
         B3_M4-013 : Application - Gestion des contentieux judiciaires
         B3_M4-014 : Offboarding - Gestion des contentieux judiciaires
         B3_M4-015 : Piloter l’exécution des décisions judiciaires
-    `;
+`;
 
-    // --- Variables Globales d'Application ---
-    let courseStructure = [];
-    let completionState = {};
-    let totalLessons = 0;
-    const FIREBASE_COLLECTION = 'progress_tracker';
-    const FIREBASE_DOC_ID = 'course_state';
-    let isInitialLoad = true;
-    let db, userId; // Initialisé par le script Firebase ci-dessus
-    const BLOCK_TITLES = {
-        'B0': "B0 : Fondamentaux du Droit",
-        'B1': "B1 : Droit Social",
-        'B2': "B2 : Pilotage & RH",
-        'B3': "B3 : Contentieux"
-    };
+/* ==============================
+   Constantes / état
+   ============================== */
+const STORAGE_KEY = 'mba_juriste_progress_v1';
+const BLOCK_TITLES = {
+  'B0': "B0 : Fondamentaux du Droit",
+  'B1': "B1 : Droit Social",
+  'B2': "B2 : Pilotage & RH",
+  'B3': "B3 : Contentieux"
+};
 
-    // --- Fonctions de Parsage de la Structure ---
+let courseStructure = [];
+let completionState = {};
+let totalLessons = 0;
 
-    /**
-     * Parse la chaîne de caractères brute en structure de données hiérarchique.
-     */
-    function parseCourseData(data) {
-        const lines = data.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-        const structure = [];
-        let currentBlock = null;
-        let currentModule = null;
-        totalLessons = 0; // Réinitialiser le compte
+/* ==============================
+   Utils: stockage
+   ============================== */
+function loadCompletionState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function saveCompletionState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch {}
+}
 
-        lines.forEach(line => {
-            if (line.startsWith('🟡')) {
-                const id = line.split(':')[0].trim().replace('🟡 ', '');
-                const title = line.substring(3).trim();
-                currentBlock = { id, title, type: 'block', modules: [] };
-                structure.push(currentBlock);
-                currentModule = null;
+/* ==============================
+   Parsing robuste
+   ============================== */
+function parseCourseData(data) {
+  const lines = data.split('\n').map(l => l.trim()).filter(Boolean);
+  const structure = [];
+  let currentBlock = null;
+  let currentModule = null;
+  totalLessons = 0;
 
-            } else if (line.startsWith('🔵') && currentBlock) {
-                const id = line.split(':')[0].trim().replace('🔵 ', '');
-                const title = line.substring(3).trim();
-                currentModule = { id, title, type: 'module', lessons: [] };
-                currentBlock.modules.push(currentModule);
-
-            } else if (line.match(/B\d+_M\d+-\d{3} :/i) && currentModule) {
-                const [id, title] = line.split(':').map(s => s.trim());
-                if (id && title) {
-                    currentModule.lessons.push({ id, title, type: 'lesson' });
-                    totalLessons++;
-                }
-            }
-        });
-        return structure;
+  for (const line of lines) {
+    // Bloc
+    if (line.startsWith('🟡')) {
+      // Exemple: "🟡 B0 : Titre"
+      const beforeColon = line.split(':')[0] || '';
+      const id = beforeColon.replace('🟡', '').trim(); // -> "B0"
+      const title = line.split(':').slice(1).join(':').trim(); // tout après le premier ':'
+      currentBlock = { id, title: title || id, type: 'block', modules: [] };
+      structure.push(currentBlock);
+      currentModule = null;
+      continue;
     }
-
-    // --- Fonctions de Persistance (Firestore) ---
-
-    async function loadCompletionState() {
-        // window.db et window.userId sont définis par le script Firebase en haut
-        if (!window.db || !window.userId) { 
-            console.warn("Pas de base de données ou d'ID utilisateur valide. Chargement annulé.");
-            return {}; 
-        }
-        try {
-            const docRef = window.doc(window.db, 'artifacts', window.appId, 'users', window.userId, FIREBASE_COLLECTION, FIREBASE_DOC_ID);
-            const docSnap = await window.getDoc(docRef);
-            return docSnap.exists() ? docSnap.data() : {};
-        } catch (e) {
-            console.error("Erreur lors du chargement de la progression:", e);
-            return {};
-        }
+    // Module
+    if (line.startsWith('🔵') && currentBlock) {
+      // Exemple: "🔵 B0_M1 : Titre module"
+      const beforeColon = line.split(':')[0] || '';
+      const id = beforeColon.replace('🔵', '').trim(); // -> "B0_M1"
+      const title = line.split(':').slice(1).join(':').trim();
+      currentModule = { id, title: title || id, type: 'module', lessons: [] };
+      currentBlock.modules.push(currentModule);
+      continue;
     }
-
-    async function saveCompletionState(newState, retry = 0) {
-        if (!window.db || !window.userId) { 
-            console.warn("Pas de base de données ou d'ID utilisateur valide. Sauvegarde annulée.");
-            return; 
-        }
-        const maxRetries = 5;
-        try {
-            const docRef = window.doc(window.db, 'artifacts', window.appId, 'users', window.userId, FIREBASE_COLLECTION, FIREBASE_DOC_ID);
-            await window.setDoc(docRef, newState);
-        } catch (e) {
-            if (retry < maxRetries) {
-                const delay = Math.pow(2, retry) * 1000;
-                await new Promise(resolve => setTimeout(resolve, delay));
-                await saveCompletionState(newState, retry + 1);
-            } else {
-                console.error("Échec de la sauvegarde après plusieurs tentatives:", e);
-            }
-        }
+    // Leçon
+    const lessonMatch = /^([A-Z]\d+_M\d+-\d{3})\s*:\s*(.+)$/.exec(line);
+    if (lessonMatch && currentModule) {
+      const [, id, title] = lessonMatch;
+      currentModule.lessons.push({ id, title, type: 'lesson' });
+      totalLessons++;
     }
+  }
+  return structure;
+}
 
-    // --- Fonctions de Rendu et de Logique d'Application ---
+/* ==============================
+   Rendu & interactions
+   ============================== */
+function updateProgress() {
+  const completed = Object.values(completionState).filter(Boolean).length;
+  const pct = totalLessons ? (completed / totalLessons) * 100 : 0;
+  const pctDisplay = pct > 0 && pct < 1 ? 1 : Math.round(pct);
 
-    function updateProgress() {
-        const completedLessons = Object.values(completionState).filter(status => status).length;
-        const percentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  document.getElementById('progress-bar').style.width = `${pctDisplay}%`;
+  document.getElementById('progress-text').textContent =
+    `${completed}/${totalLessons} leçons complétées (${pctDisplay}%)`;
+}
 
-        document.getElementById('progress-bar').style.width = `${percentage.toFixed(2)}%`;
-        document.getElementById('progress-text').textContent = `${completedLessons}/${totalLessons} leçons complétées (${percentage.toFixed(0)}%)`;
+function handleCheckboxChange(event) {
+  const lessonId = event.target.dataset.lessonId;
+  const isChecked = event.target.checked;
+  completionState[lessonId] = isChecked;
+  updateProgress();
 
-        if (percentage > 0 && percentage < 1) {
-             document.getElementById('progress-bar').style.width = '1%';
-        }
+  const container = event.target.closest('.lesson-container');
+  if (container) {
+    const titleSpan = container.querySelector('label span:last-child');
+    if (isChecked) {
+      container.classList.remove('bg-white', 'hover:bg-gray-50');
+      container.classList.add('bg-green-50', 'ring-2', 'ring-green-400');
+      if (titleSpan) titleSpan.classList.add('line-through', 'text-gray-600');
+    } else {
+      container.classList.remove('bg-green-50', 'ring-2', 'ring-green-400');
+      container.classList.add('bg-white', 'hover:bg-gray-50');
+      if (titleSpan) titleSpan.classList.remove('line-through', 'text-gray-600');
     }
+  }
+  saveCompletionState(completionState);
+}
 
-    function handleCheckboxChange(event) {
-        const lessonId = event.target.dataset.lessonId;
-        const isChecked = event.target.checked;
+function createLessonElement(lesson) {
+  const isCompleted = completionState[lesson.id] === true;
+  const div = document.createElement('div');
+  div.className = `lesson-container flex items-start p-3 rounded-lg transition-all duration-300 shadow-sm ${isCompleted ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white hover:bg-gray-50'}`;
+  div.innerHTML = `
+    <input type="checkbox" id="${lesson.id}" data-lesson-id="${lesson.id}" ${isCompleted ? 'checked' : '' }
+           class="mt-1 w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 transition-colors duration-200 cursor-pointer">
+    <label for="${lesson.id}" class="ml-3 flex flex-col cursor-pointer">
+      <span class="font-mono text-sm text-gray-500">${lesson.id}</span>
+      <span class="text-gray-900 font-medium ${isCompleted ? 'line-through text-gray-600' : ''}">${lesson.title}</span>
+    </label>
+  `;
+  div.querySelector('input[type="checkbox"]').addEventListener('change', handleCheckboxChange);
+  return div;
+}
 
-        completionState[lessonId] = isChecked;
+function createModuleElement(module) {
+  const wrap = document.createElement('div');
+  wrap.className = "bg-blue-100 p-4 rounded-xl shadow-md border-l-4 border-blue-500 mb-4";
+  const contentId = `content-${module.id}`;
 
-        updateProgress();
-        
-        // Mise à jour du style de la leçon
-        const container = event.target.closest('.lesson-container');
-        if (container) {
-             if (isChecked) {
-                container.classList.remove('bg-white', 'hover:bg-gray-50');
-                container.classList.add('bg-green-50', 'ring-2', 'ring-green-400');
-                container.querySelector('span:nth-child(2)').classList.add('line-through', 'text-gray-600');
-            } else {
-                container.classList.remove('bg-green-50', 'ring-2', 'ring-green-400');
-                container.classList.add('bg-white', 'hover:bg-gray-50');
-                container.querySelector('span:nth-child(2)').classList.remove('line-through', 'text-gray-600');
-            }
-        }
+  wrap.innerHTML = `
+    <div class="flex items-center justify-between cursor-pointer"
+         onclick="document.getElementById('${contentId}').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')">
+      <h3 class="text-xl font-bold text-blue-800 flex items-center">
+        <span class="text-2xl mr-2">🔵</span>${module.title}
+      </h3>
+      <svg class="w-5 h-5 text-blue-700 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+    <div id="${contentId}" class="space-y-2 pl-4 pt-3 mt-3 border-l-2 border-blue-300 hidden"></div>
+  `;
+  const container = wrap.querySelector(`#${contentId}`);
+  module.lessons.forEach(lesson => container.appendChild(createLessonElement(lesson)));
+  return wrap;
+}
 
-        saveCompletionState(completionState);
+function createBlockElement(block) {
+  const wrap = document.createElement('div');
+  wrap.id = `block-${block.id}`;
+  wrap.className = "course-block space-y-4";
+
+  wrap.innerHTML = `
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-800 mb-6 mt-4 flex items-center">
+      <span class="text-3xl mr-3">🟡</span>${block.title}
+    </h2>
+    <div class="space-y-4" id="modules-container-${block.id}"></div>
+  `;
+  const container = wrap.querySelector(`#modules-container-${block.id}`);
+  block.modules.forEach(m => container.appendChild(createModuleElement(m)));
+  return wrap;
+}
+
+function switchTab(blockId) {
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    if (btn.dataset.blockId === blockId) {
+      btn.classList.remove('text-gray-500','border-transparent','hover:border-gray-300');
+      btn.classList.add('text-blue-600','border-blue-600');
+    } else {
+      btn.classList.add('text-gray-500','border-transparent','hover:border-gray-300');
+      btn.classList.remove('text-blue-600','border-blue-600');
     }
+  });
+  document.querySelectorAll('.course-block').forEach(block => {
+    block.style.display = (block.id === `block-${blockId}`) ? 'block' : 'none';
+  });
+}
 
-    function createLessonElement(lesson) {
-        const isCompleted = completionState[lesson.id] === true;
+function createTabButtons() {
+  const nav = document.getElementById('tab-navigation');
+  const firstId = courseStructure.length ? courseStructure[0].id : null;
 
-        const container = document.createElement('div');
-        container.className = `lesson-container flex items-start p-3 rounded-lg transition-all duration-300 shadow-sm ${isCompleted ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white hover:bg-gray-50'}`;
-        
-        container.innerHTML = `
-            <input type="checkbox" id="${lesson.id}" data-lesson-id="${lesson.id}" ${isCompleted ? 'checked' : ''}
-                   class="mt-1 w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 transition-colors duration-200 cursor-pointer">
-            <label for="${lesson.id}" class="ml-3 flex flex-col cursor-pointer">
-                <span class="font-mono text-sm text-gray-500">${lesson.id}</span>
-                <span class="text-gray-900 font-medium ${isCompleted ? 'line-through text-gray-600' : ''}">${lesson.title}</span>
-            </label>
-        `;
+  courseStructure.forEach((block, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.blockId = block.id;
+    btn.className = `tab-button px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${idx===0?'text-blue-600 border-blue-600':'text-gray-500 border-transparent hover:border-gray-300'}`;
+    btn.textContent = BLOCK_TITLES[block.id] || block.id;
+    btn.onclick = () => switchTab(block.id);
+    nav.appendChild(btn);
+  });
+  if (firstId) switchTab(firstId);
+}
 
-        container.querySelector('input[type="checkbox"]').addEventListener('change', handleCheckboxChange);
-        return container;
-    }
+/* ==============================
+   Scroll-to-top visibility
+   ============================== */
+function handleScroll() {
+  const btn = document.getElementById('scroll-to-top');
+  if (window.scrollY > 300) {
+    btn.classList.add('opacity-100','translate-y-0');
+    btn.classList.remove('opacity-0','translate-y-4');
+  } else {
+    btn.classList.remove('opacity-100','translate-y-0');
+    btn.classList.add('opacity-0','translate-y-4');
+  }
+}
 
-    function createModuleElement(module) {
-        const moduleDiv = document.createElement('div');
-        moduleDiv.className = "bg-blue-100 p-4 rounded-xl shadow-md border-l-4 border-blue-500 mb-4";
-        
-        // Contenu du module (caché par défaut)
-        const contentId = `content-${module.id}`;
-        
-        moduleDiv.innerHTML = `
-            <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('${contentId}').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')">
-                <h3 class="text-xl font-bold text-blue-800 flex items-center">
-                    <span class="text-2xl mr-2">🔵</span>
-                    ${module.title}
-                </h3>
-                <svg class="w-5 h-5 text-blue-700 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </div>
-            <div id="${contentId}" class="space-y-2 pl-4 pt-3 mt-3 border-l-2 border-blue-300 hidden">
-                <!-- Les leçons seront insérées ici -->
-            </div>
-        `;
+/* ==============================
+   Boot
+   ============================== */
+document.addEventListener('DOMContentLoaded', () => {
+  // 1) Parser la structure
+  courseStructure = parseCourseData(COURSE_DATA_RAW);
 
-        const lessonsContainer = moduleDiv.querySelector(`#${contentId}`);
-        module.lessons.forEach(lesson => {
-            lessonsContainer.appendChild(createLessonElement(lesson));
-        });
+  // 2) Charger l'état depuis localStorage
+  completionState = loadCompletionState();
 
-        return moduleDiv;
-    }
+  // 3) Rendu
+  const list = document.getElementById('course-list');
+  document.getElementById('loading-indicator').style.display = 'none';
+  courseStructure.forEach(block => list.appendChild(createBlockElement(block)));
 
-    function createBlockElement(block) {
-        const blockDiv = document.createElement('div');
-        blockDiv.id = `block-${block.id}`;
-        blockDiv.className = "course-block space-y-4";
-        
-        blockDiv.innerHTML = `
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-800 mb-6 mt-4 flex items-center">
-                <span class="text-3xl mr-3">🟡</span>
-                ${block.title}
-            </h2>
-            <div class="space-y-4" id="modules-container-${block.id}">
-                <!-- Les modules seront insérés ici -->
-            </div>
-        `;
-        
-        const modulesContainer = blockDiv.querySelector(`#modules-container-${block.id}`);
-        block.modules.forEach(module => {
-            modulesContainer.appendChild(createModuleElement(module));
-        });
+  // 4) Onglets
+  createTabButtons();
 
-        return blockDiv;
-    }
-    
-    /**
-     * Gère la navigation par onglets.
-     */
-    function switchTab(blockId) {
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            if (btn.dataset.blockId === blockId) {
-                btn.classList.remove('text-gray-500', 'border-transparent', 'hover:border-gray-300');
-                btn.classList.add('text-blue-600', 'border-blue-600');
-            } else {
-                btn.classList.add('text-gray-500', 'border-transparent', 'hover:border-gray-300');
-                btn.classList.remove('text-blue-600', 'border-blue-600');
-            }
-        });
+  // 5) Progression
+  updateProgress();
 
-        document.querySelectorAll('.course-block').forEach(block => {
-            block.style.display = (block.id === `block-${blockId}`) ? 'block' : 'none';
-        });
-    }
+  // 6) Scroll handler
+  window.addEventListener('scroll', handleScroll);
+  handleScroll();
 
-    function createTabButtons() {
-        const tabNav = document.getElementById('tab-navigation');
-        const firstBlockId = courseStructure.length > 0 ? courseStructure[0].id : null;
-        
-        courseStructure.forEach((block, index) => {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.dataset.blockId = block.id;
-            button.className = `tab-button px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${index === 0 ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent hover:border-gray-300'}`;
-            button.textContent = BLOCK_TITLES[block.id] || block.id;
-            button.onclick = () => switchTab(block.id);
-            tabNav.appendChild(button);
-        });
-
-        if (firstBlockId) {
-            switchTab(firstBlockId); // Activer le premier onglet
-        }
-    }
-
-    /**
-     * Gère le bouton "Remonter en haut"
-     */
-    function handleScroll() {
-        const btn = document.getElementById('scroll-to-top');
-        if (window.scrollY > 300) {
-            btn.classList.add('opacity-100', 'translate-y-0');
-            btn.classList.remove('opacity-0', 'translate-y-4');
-        } else {
-            btn.classList.remove('opacity-100', 'translate-y-0');
-            btn.classList.add('opacity-0', 'translate-y-4');
-        }
-    }
-
-
-    window.initApp = async function() {
-        // 1. Parser les données brutes
-        courseStructure = parseCourseData(COURSE_DATA_RAW);
-        
-        // 2. Récupérer l'état de complétion depuis Firestore (si disponible)
-        completionState = await loadCompletionState();
-
-        // 3. Masquer l'indicateur de chargement
-        document.getElementById('loading-indicator').style.display = 'none';
-
-        // 4. Générer le rendu de la liste
-        const courseListContainer = document.getElementById('course-list');
-        courseStructure.forEach(block => {
-            courseListContainer.appendChild(createBlockElement(block));
-        });
-
-        // 5. Créer la navigation par onglets
-        createTabButtons();
-        
-        // 6. Mettre à jour la progression initiale
-        updateProgress();
-
-        // 7. Initialiser le gestionnaire de défilement pour le bouton "Remonter"
-        window.addEventListener('scroll', handleScroll);
-        
-        // 8. Afficher l'application
-        document.getElementById('app-container').style.opacity = 1;
-        isInitialLoad = false;
-    };
-
-    // Assurez-vous que le gestionnaire de défilement est appelé même si l'app est en cours de chargement
-    window.addEventListener('scroll', handleScroll);
-
+  // 7) Afficher l'app
+  document.getElementById('app-container').style.opacity = 1;
+});
 </script>
 </body>
 </html>
