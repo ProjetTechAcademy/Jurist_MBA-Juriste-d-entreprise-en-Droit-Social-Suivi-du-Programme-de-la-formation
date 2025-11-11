@@ -1,763 +1,996 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MBA Juriste d'entreprise en Droit Social - Suivi</title>
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Police Inter & styles de base -->
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-    :root { color-scheme: light; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f7f7f7;
-    }
-    #app-container { opacity: 0; transition: opacity .5s; }
-    .text-shadow-custom { text-shadow: 2px 2px 4px rgba(0,0,0,.1); }
-    #scroll-to-top { transition: opacity .3s, transform .3s; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBA Juriste d'entreprise en Droit Social</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: #4B5563;
+        }
+        .tab-btn.active {
+            color: #6B8A7A;
+            border-bottom-color: #6B8A7A;
+        }
+        .lecon-list {
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .lecon-list.open {
+            max-height: 2000px;
+        }
+        .module-toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .module-toggle.open .module-toggle-icon {
+            transform: rotate(90deg);
+        }
+        .progress-bar-container {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #6B8A7A;
+            transition: width 0.5s ease;
+        }
+    </style>
 </head>
-<body>
-<div id="app-container" class="min-h-screen p-4 sm:p-8 pt-4 pb-20">
-  <header class="mb-6 sticky top-0 bg-white shadow-lg rounded-xl z-20 p-4 border-b-4 border-amber-500">
-    <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom">
-      MBA Juriste d'entreprise en Droit Social
-    </h1>
-    <p class="text-lg sm:text-xl font-semibold text-amber-600 mb-4">
-      Suivi du Programme de la formation
-    </p>
+<body class="text-gray-800">
 
-    <!-- Barre de progression -->
-    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-      <div id="progress-bar" class="bg-amber-500 h-4 rounded-full transition-all duration-500 ease-out" style="width:0%"></div>
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-10 md:mb-16">
+            <h1 class="text-3xl md:text-5xl font-bold text-[#6B8A7A] mb-2">MBA Juriste d'entreprise en Droit Social</h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-700">Formation Juridique & Ressources Humaines</h2>
+        </header>
+
+        <section id="overview" class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Aperçu du Programme et Progression</h3>
+            <p class="text-gray-600 mb-6 max-w-3xl mx-auto text-center">
+                Visualisez votre avancement global et la répartition du programme. Les indicateurs sont mis à jour en temps réel.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#6B8A7A]">
+                    <div id="bloc-count" class="text-5xl font-bold text-[#6B8A7A]">...</div>
+                    <div class="text-lg font-semibold text-gray-700 mt-2">Blocs de Compétences</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#A08B76]">
+                    <div id="module-count" class="text-5xl font-bold text-[#A08B76]">...</div>
+                    <div class="text-lg font-semibold text-gray-700 mt-2">Modules de Formation</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#A3B8A7]">
+                    <div id="lecon-count" class="text-5xl font-bold text-[#A3B8A7]">...</div>
+                    <div class="text-lg font-semibold text-gray-700 mt-2">Leçons & Activités</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="progression" class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Progression par Bloc</h3>
+            <p class="text-gray-600 mb-6">
+                Suivez le pourcentage de leçons complétées dans chaque domaine d'étude.
+            </p>
+            <div id="bloc-progress-container" class="space-y-4">
+            </div>
+        </section>
+
+        <section id="explorer" class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Explorateur Détaillé et Suivi</h3>
+            <p class="text-gray-600 mb-8 max-w-3xl mx-auto text-center">
+                Utilisez les cases à cocher pour marquer les leçons terminées et mettre à jour votre progression.
+            </p>
+            
+            <div class="bg-white rounded-xl shadow-lg">
+                <div id="tab-container" class="flex flex-wrap border-b border-gray-200">
+                </div>
+                
+                <div id="content-container" class="p-6 md:p-8">
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-500 mt-12">
+            <p>Application interactive générée à partir de la structure du programme.</p>
+        </footer>
     </div>
-    <div class="text-right text-sm font-medium text-blue-800">
-      <span id="progress-text">0/0 leçons complétées (0%)</span>
-    </div>
 
-    <!-- Onglets -->
-    <div id="tab-navigation" class="mt-4 flex flex-wrap gap-2 border-b border-gray-200"></div>
-  </header>
+    <script>
+        /* ---------- DATA ---------- */
+        const programData = {
+            "B0": {
+                title: "Fondamentaux du droit",
+                color: '#6B8A7A',
+                modules: [
+                    {
+                        id: "B0_M01", title: "Mise à niveau en droit social",
+                        lecons: [
+                            { id: "B0_M01_001", title: "La notion de droit du travail" },
+                            { id: "B0_M01_002", title: "La formation du contrat de travail" },
+                            { id: "B0_M01_003", title: "Maîtriser la rédaction d’un contrat de travail" },
+                            { id: "B0_M01_004", title: "L’exécution du contrat de travail" },
+                            { id: "B0_M01_005", title: "Le contrat de travail à durée indéterminée" },
+                            { id: "B0_M01_006", title: "Le CDD et le contrat de travail temporaire" },
+                            { id: "B0_M01_007", title: "Le contrat de travail à temps partiel" },
+                            { id: "B0_M01_008", title: "Les contrats de formation" },
+                            { id: "B0_M01_009", title: "La rédaction du contrat de travail" },
+                            { id: "B0_M01_010", title: "Application : Etablir les contrats de travail" },
+                            { id: "B0_M01_011", title: "Comment et pourquoi se former à gestion des parcours salariés" },
+                            { id: "B0_M01_012", title: "Le recrutement" },
+                            { id: "B0_M01_013", title: "Les formalités administratives d'embauche" },
+                            { id: "B0_M01_014", title: "La suspension du contrat de travail" },
+                            { id: "B0_M01_015", title: "L'édition des documents de suspension du contrat" },
+                            { id: "B0_M01_016", title: "La rupture du contrat de travail : introduction" },
+                            { id: "B0_M01_017", title: "Le licenciement" },
+                            { id: "B0_M01_018", title: "Les autres modes de rupture du contrat de travail" },
+                            { id: "B0_M01_019", title: "Les fins de contrat : indemnité de précarité, ICP, Indemnité RTT, et autres indemnités" },
+                            { id: "B0_M01_020", title: "Les fins de contrat : rupture conventionnelle, départ et mise à la retraite" },
+                            { id: "B0_M01_021", title: "Les formalités de rupture du contrat de travail" },
+                            { id: "B0_M01_022", title: "L'édition des documents de fin de contrat" },
+                            { id: "B0_M01_023", title: "Synthèse et application : Traiter les entrées et sorties des salariés" }
+                        ]
+                    },
+                    {
+                        id: "B0_M02", title: "Mise à niveau en droit - L’organisation judiciaire",
+                        lecons: [
+                            { id: "B0_M02_001", title: "L'organisation judiciaire européenne" },
+                            { id: "B0_M02_002", title: "L'organisation judiciaire nationale" },
+                            { id: "B0_M02_003", title: "L'action en justice" },
+                            { id: "B0_M02_004", title: "Les MARD" },
+                            { id: "B0_M02_005", title: "Application : Comprendre l'organisation judiciaire" }
+                        ]
+                    },
+                    {
+                        id: "B0_M03", title: "Mise à niveau en droit - Propriété intellectuelle et industrielle",
+                        lecons: [
+                            { id: "B0_M03_001", title: "La théorie du patrimoine" },
+                            { id: "B0_M03_002", title: "La propriété" },
+                            { id: "B0_M03_003", title: "Le fonds de commerce et le contrat de bail commercial" },
+                            { id: "B0_M03_004", title: "La propriété industrielle : brevet, marque, dessins et modèles" },
+                            { id: "B0_M03_005", title: "La propriété littéraire et artistique : le droit d'auteur" },
+                            { id: "B0_M03_006", title: "Le droit de l'informatique et de la propriété industrielle" },
+                            { id: "B0_M03_007", title: "La protection juridique des sites internet et des créations numériques" },
+                            { id: "B0_M03_008", title: "Les règles juridiques d'utilisation d'internet" },
+                            { id: "B0_M03_009", title: "Application : Caractériser les biens" }
+                        ]
+                    },
+                    {
+                        id: "B0_M04", title: "Mise à niveau en droit - Théorie générale du contrat",
+                        lecons: [
+                            { id: "B0_M04_001", title: "La théorie générale du contrat" },
+                            { id: "B0_M04_002", title: "La validité du contrat" },
+                            { id: "B0_M04_003", title: "Les clauses contractuelles particulières" },
+                            { id: "B0_M04_004", title: "L'exécution du contrat" },
+                            { id: "B0_M04_005", title: "L'inexécution du contrat" },
+                            { id: "B0_M04_006", title: "Application : Maîtriser la théorie générale du contrat" }
+                        ]
+                    },
+                    {
+                        id: "B0_M05", title: "Mise à niveau en droit - Les contrats de l’entreprise",
+                        lecons: [
+                            { id: "B0_M05_001", title: "Le contrat de vente du fonds de commerce" },
+                            { id: "B0_M05_002", title: "Le contrat de location-gérance du fonds de commerce" },
+                            { id: "B0_M05_003", title: "Le contrat de vente" },
+                            { id: "B0_M05_004", title: "Les contrats de consommation" },
+                            { id: "B0_M05_005", title: "Le compte de dépôt bancaire" },
+                            { id: "B0_M05_006", title: "Les contrats de crédit aux entreprises" },
+                            { id: "B0_M05_007", title: "Les sûretés" }
+                        ]
+                    },
+                    {
+                        id: "B0_M06", title: "Mise à niveau en droit - L’entreprise et ses responsabilités",
+                        lecons: [
+                            { id: "B0_M06_001", title: "Application : Maîtriser les contrats de l'entreprise" },
+                            { id: "B0_M06_002", title: "Les responsabilités civile et pénale" },
+                            { id: "B0_M06_003", title: "La responsabilité pénale" },
+                            { id: "B0_M06_004", title: "La procédure pénale" },
+                            { id: "B0_M06_005", title: "La responsabilité civile extracontractuelle" },
+                            { id: "B0_M06_006", title: "Les responsabilités du fait des produits défectueux et du préjudice environnemental" },
+                            { id: "B0_M06_007", title: "Application : L'entreprise et ses responsabilités" }
+                        ]
+                    },
+                    {
+                        id: "B0_M07", title: "Mise à niveau en droit des sociétés",
+                        lecons: [
+                            { id: "B0_M07_001", title: "Les notions d'entreprise et de société" },
+                            { id: "B0_M07_002", title: "Les éléments constitutifs du contrat de société" },
+                            { id: "B0_M07_003", title: "Le contrat de société" },
+                            { id: "B0_M07_004", title: "La constitution de la société" },
+                            { id: "B0_M07_005", title: "La société en formation" },
+                            { id: "B0_M07_006", title: "Les attributs de la personnalité morale" },
+                            { id: "B0_M07_007", title: "Les notions d'intérêt social et d'abus de droit" },
+                            { id: "B0_M07_008", title: "Les organes de gestion" },
+                            { id: "B0_M07_009", title: "Les associés" },
+                            { id: "B0_M07_010", title: "Le contrôle de la société" },
+                            { id: "B0_M07_011", title: "Le statut du commissaire aux comptes" },
+                            { id: "B0_M07_012", title: "La dissolution et la liquidation des sociétés" },
+                            { id: "B0_M07_013", title: "La transformation des sociétés" },
+                            { id: "B0_M07_014", title: "Les sociétés sans personnalité juridique" },
+                            { id: "B0_M07_015", title: "Application : Comprendre la nature et le fonctionnement d'une entreprise en société" },
+                            { id: "B0_M07_016", title: "Les formes juridiques des sociétés" },
+                            { id: "B0_M07_017", title: "Rédaction et gestion des documents juridiques" },
+                            { id: "B0_M07_018", title: "Focus sur les statuts juridiques - SARL" },
+                            { id: "B0_M07_019", title: "Focus sur les statuts juridiques - SA" },
+                            { id: "B0_M07_020", title: "Focus sur les statuts juridiques - SAS" }
+                        ]
+                    },
+                    {
+                        id: "B0_M08", title: "Mise à niveau en droit fiscal",
+                        lecons: [
+                            { id: "B0_M08__001", title: "Les caractéristiques et les sources du droit fiscal" },
+                            { id: "B0_M08__002", title: "La classification des impôts et taxes" },
+                            { id: "B0_M08__003", title: "Organisation et rôle de l'administration fiscale et veille fiscale" },
+                            { id: "B0_M08__004", title: "Application : Introduire le droit fiscal" }
+                        ]
+                    },
+                    {
+                        id: "B0_M09", title: "Mise à niveau en droit de la concurrence",
+                        lecons: [
+                            { id: "B0_M09__001", title: "Le contrôle des concentrations" },
+                            { id: "B0_M09__002", title: "Les pratiques anticoncurrentielles" },
+                            { id: "B0_M09__003", title: "L'entreprise et la concurrence déloyale" },
+                            { id: "B0_M09__004", title: "La transparence et les pratiques restrictives de concurrence" },
+                            { id: "B0_M09__005", title: "Application : Maîtriser les situations contraires au droit de la concurrence" }
+                        ]
+                    },
+                    {
+                        id: "B0_M10", title: "Mise à niveau en droit des procédures collectives (sauvegarde, redressement, liquidation)",
+                        lecons: [
+                            { id: "B0_M10__001", title: "L'évolution du droit de l'entreprise en difficulté" },
+                            { id: "B0_M10__002", title: "La prévention des difficultés de l'entreprise" },
+                            { id: "B0_M10__003", title: "Le traitement amiable des difficultés par la procédure de conciliation" },
+                            { id: "B0_M10__004", title: "Le traitement judiciaire par les procédures collectives" },
+                            { id: "B0_M10__005", title: "La procédure de sauvegarde" },
+                            { id: "B0_M10__006", title: "Le sort des créanciers en période d'observation" },
+                            { id: "B0_M10__007", title: "Le plan de sauvegarde ordinaire et la sauvegarde accélérée" },
+                            { id: "B0_M10__008", title: "La procédure de redressement judiciaire" },
+                            { id: "B0_M10__009", title: "La procédure de liquidation judiciaire" },
+                            { id: "B0_M10__010", title: "Application : Pérenniser l'entreprise en difficulté" }
+                        ]
+                    },
+                    {
+                        id: "B0_M11", title: "Mise à niveau en droit de l’intelligence artificielle",
+                        lecons: [
+                            { id: "B0_M11__001", title: "Un droit de l'IA dans les pratiques de l'entreprise" }
+                        ]
+                    }
+                ]
+            },
+            "B1": {
+                title: "Pilotage stratégique et opérationnel de la fonction juridique et RH",
+                color: '#A08B76',
+                modules: [
+                    {
+                        id: "B1_M01", title: "Optimiser et présenter la veille",
+                        lecons: [
+                            { id: "B1_M01_001", title: "Délimiter et structurer une veille pour une entreprise" },
+                            { id: "B1_M01_002", title: "Développer un réseau d’experts pour une veille partagée" }
+                        ]
+                    },
+                    {
+                        id: "B1_M02", title: "Réaliser une veille juridique et sociale",
+                        lecons: [
+                            { id: "B1_M02_001", title: "Les différents types de veille" },
+                            { id: "B1_M02_002", title: "Introduction : la notion de veille juridique" },
+                            { id: "B1_M02_003", title: "Comment faire de la veille juridique" },
+                            { id: "B1_M02_004", title: "Les principaux sites d'actualité juridique" },
+                            { id: "B1_M02_005", title: "Les différents flux juridiques officiels" },
+                            { id: "B1_M02_006", title: "La réalisation de veille juridique" },
+                            { id: "B1_M02_007", title: "Les outils pour une veille juridique efficace" },
+                            { id: "B1_M02_008", title: "Le pilotage de veille juridique" },
+                            { id: "B1_M02_009", title: "Les grandes tendances juridiques en France et leurs effets sur l’organisation" }
+                        ]
+                    },
+                    {
+                        id: "B1_M03", title: "Procéder de la veille juridique à la recommandation stratégique",
+                        lecons: [
+                            { id: "B1_M03_001", title: "Onboarding - Procéder de la veille juridique à la recommandation stratégique" },
+                            { id: "B1_M03_002", title: "Utilisation de Village Justice et experts LinkedIn" },
+                            { id: "B1_M03_003", title: "Présentation des bases de données juridiques et outils de veille" },
+                            { id: "B1_M03_004", title: "Méthodologie de recherche et d'organisation de la veille" },
+                            { id: "B1_M03_005", title: "Techniques de communication écrite" },
+                            { id: "B1_M03_006", title: "Introduction aux bases de données juridiques" },
+                            { id: "B1_M03_007", title: "Analyse des évolutions législatives" },
+                            { id: "B1_M03_008", title: "Application - Recherche et présentation d'informations" },
+                            { id: "B1_M03_009", title: "Reporting extra-financier et directives" },
+                            { id: "B1_M03_010", title: "Mise en situation pratique de la veille juridique" },
+                            { id: "B1_M03_011", title: "Impact des évolutions législatives internationales" },
+                            { id: "B1_M03_012", title: "Outils numériques avancés pour la veille juridique" },
+                            { id: "B1_M03_013", title: "Auto-Evaluation - Procéder de la veille juridique à la recommandation stratégique" },
+                            { id: "B1_M03_014", title: "Application - Procéder de la veille juridique à la recommandation stratégique" },
+                            { id: "B1_M03_015", title: "Offboarding - Procéder de la veille juridique à la recommandation stratégique" }
+                        ]
+                    },
+                    {
+                        id: "B1_M04", title: "La veille juridique en pratique",
+                        lecons: [
+                            { id: "B1_M04_001", title: "Prise de connaissance et méthodologie d'utilisation des sites institutionnels" },
+                            { id: "B1_M04_002", title: "Réaliser une note interne à partir d'une veille juridique en droit des données personnelles" },
+                            { id: "B1_M04_003", title: "Réaliser une note interne à partir d'une veille juridique en matière de TVA" },
+                            { id: "B1_M04_004", title: "Réaliser une note interne à partir d'une veille juridique en droit des contrats" }
+                        ]
+                    },
+                    { id: "B1_M05", title: "Définir la stratégie juridique de l’entreprise", lecons: [] },
+                    { id: "B1_M06", title: "Intégrer des LegalTech et de l’IA dans la stratégie juridique", lecons: [] },
+                    { id: "B1_M07", title: "Maîtriser la méthodologie complète de l’audit juridique", lecons: [] },
+                    { id: "B1_M08", title: "Elaborer un plan d’action correctives et préventives", lecons: [] },
+                    { id: "B1_M09", title: "Digitaliser et automatiser les processus juridiques", lecons: [] },
+                    { id: "B1_M10", title: "Concevoir et rédiger des politiques de conformité", lecons: [] },
+                    { id: "B1_M11", title: "Déployer et piloter les dispositifs de conformité", lecons: [] },
+                    {
+                        id: "B1_M12", title: "Optimiser et sécuriser l’archivage",
+                        lecons: [
+                            { id: "B1_M12_001", title: "Optimiser et sécuriser l’archivage" },
+                            { id: "B1_M12_002", title: "Introduction au RGPD et archivage numérique" },
+                            { id: "B1_M12_003", title: "Les règles d’archivage temporaire et l’anonymisation" },
+                            { id: "B1_M12_004", title: "Minimisation des données et droit d’accès" },
+                            { id: "B1_M12_005", title: "Sécurisation des accès et des données archivées" },
+                            { id: "B1_M12_006", title: "Conséquences des violations de données" },
+                            { id: "B1_M12_007", title: "Durées de conservation légale des documents" },
+                            { id: "B1_M12_008", title: "Exemples de solutions techniques disponibles" },
+                            { id: "B1_M12_009", title: "Élaboration d’une procédure d’archivage numérique" },
+                            { id: "B1_M12_010", title: "Présentation des procédures d’archivage par secteur d’activité" },
+                            { id: "B1_M12_011", title: "Auto-Evaluation - Optimiser et sécuriser l’archivage" },
+                            { id: "B1_M12_012", title: "Application - Optimiser et sécuriser l’archivage" },
+                            { id: "B1_M12_013", title: "Offboarding - Optimiser et sécuriser l’archivage" }
+                        ]
+                    },
+                    {
+                        id: "B1_M13", title: "Piloter une équipe RH",
+                        lecons: [
+                            { id: "B1_M13_001", title: "Une fonction RH alignée avec les attentes et besoins de ses clients ?" },
+                            { id: "B1_M13_002", title: "DRH et défis digitaux" },
+                            { id: "B1_M13_003", title: "La mesure de la performance de la fonction RH" },
+                            { id: "B1_M13_004", title: "Décliner la stratégie en action" },
+                            { id: "B1_M13_005", title: "Des compétences repérées à l'équipe opérationnelle" },
+                            { id: "B1_M13_006", title: "L'identification des compétences" },
+                            { id: "B1_M13_007", title: "Évaluer le niveau de compétences" },
+                            { id: "B1_M13_008", title: "Débriefer toute acquisition de compétence" },
+                            { id: "B1_M13_009", title: "Acter la compétence acquise" },
+                            { id: "B1_M13_010", title: "Talent Review" },
+                            { id: "B1_M13_011", title: "Capitaliser sur l’expérience, tracer une roadmap" },
+                            { id: "B1_M13_012", title: "Application : Piloter une équipe RH" }
+                        ]
+                    },
+                    {
+                        id: "B1_M14", title: "Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs",
+                        lecons: [
+                            { id: "B1_M14_001", title: "Les théories de l'organisation au service du management" },
+                            { id: "B1_M14_002", title: "Le management et le manager" },
+                            { id: "B1_M14_003", title: "Le management des individus et des groupes" },
+                            { id: "B1_M14_004", title: "Le management à distance" },
+                            { id: "B1_M14_005", title: "Les plateformes de travail collaboratives" },
+                            { id: "B1_M14_006", title: "Fixer des objectifs SMART" },
+                            { id: "B1_M14_007", title: "L'utilité du suivi de la performance" },
+                            { id: "B1_M14_008", title: "Les indicateurs de suivi selon les objectifs" },
+                            { id: "B1_M14_009", title: "La fixation des objectifs de l'équipe" },
+                            { id: "B1_M14_010", title: "Le suivi des objectifs de l'équipe" },
+                            { id: "B1_M14_011", title: "Faire faire sans se substituer" },
+                            { id: "B1_M14_012", title: "Intégrer la vision (cadre de référence) de l’autre" },
+                            { id: "B1_M14_013", title: "Obtenir régulièrement" },
+                            { id: "B1_M14_014", title: "Application : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs" }
+                        ]
+                    },
+                    {
+                        id: "B1_M15", title: "Comprendre et analyser des situations en droit de la sécurité sociale",
+                        lecons: [
+                            { id: "B1_M15_001", title: "Onboarding vidéo : Comprendre et analyser des situations en droit de la sécurité sociale" },
+                            { id: "B1_M15_002", title: "Introduction au droit de la sécurité sociale" },
+                            { id: "B1_M15_003", title: "Le droit européen de la sécurité sociale" },
+                            { id: "B1_M15_004", title: "Les régimes de la sécurité sociale" },
+                            { id: "B1_M15_005", title: "Les régimes complémentaires de sécurité sociale" },
+                            { id: "B1_M15_006", title: "Le contentieux en droit de la sécurité sociale" },
+                            { id: "B1_M15_007", title: "La veille juridique et actualité" },
+                            { id: "B1_M15_008", title: "Offboarding vidéo : Synthèse - Comprendre et analyser des situations en droit de la sécurité sociale" },
+                            { id: "B1_M15_009", title: "Application : Comprendre et analyser des situations en droit de la sécurité sociale" },
+                            { id: "B1_M15_010", title: "Auto-évaluation : Comprendre et analyser des situations en droit de la sécurité sociale" }
+                        ]
+                    },
+                    {
+                        id: "B1_M16", title: "Construire une politique de compensations and benefits",
+                        lecons: [
+                            { id: "B1_M16_001", title: "La politique de rémunération" },
+                            { id: "B1_M16_002", title: "La politique de rémunération et les politiques RH" },
+                            { id: "B1_M16_003", title: "La politique de rémunération : élaborer et piloter" },
+                            { id: "B1_M16_004", title: "La mise en oeuvre de sa politique salariale" },
+                            { id: "B1_M16_005", title: "L'optimisation de sa politique salariale" },
+                            { id: "B1_M16_006", title: "L'évaluation d'impact de la politique de rémunération" },
+                            { id: "B1_M16_007", title: "Le Comp & Ben Manager" },
+                            { id: "B1_M16_008", title: "Le benchmark de rémunération" },
+                            { id: "B1_M16_009", title: "Les outils de benchmark pour s’assurer de la meilleure compétitivité en matière de rémunération" },
+                            { id: "B1_M16_010", title: "Les primes et avantages alliés pour convaincre" },
+                            { id: "B1_M16_011", title: "L’entretien de décision salariale" },
+                            { id: "B1_M16_012", title: "Présentation de la rémunération brute et le décompte du temps de travail" },
+                            { id: "B1_M16_013", title: "La rémunération brute : le salaire de base, les primes et la retenue pour absence" },
+                            { id: "B1_M16_014", title: "La rémunération brute : le salaire de base, les primes et la retenue pour absence (Type: Leçons)" },
+                            { id: "B1_M16_015", title: "Cas pratique - Salaire de base (Type: Exercices)" },
+                            { id: "B1_M16_016", title: "Cas pratique - Primes et indemnités (Type: Exercices)" },
+                            { id: "B1_M16_017", title: "La rémunération brute : les avantages en nature" },
+                            { id: "B1_M16_018", title: "Les salaires net, imposable et à payer" },
+                            { id: "B1_M16_020", title: "La protection sociale, généralités" },
+                            { id: "B1_M16_021", title: "La protection sociale, généralités (Type: Leçons)" },
+                            { id: "B1_M16_022", title: "Applications | Généralités (Type: Exercices)" },
+                            { id: "B1_M16_023", title: "L’assurance maladie du régime général" },
+                            { id: "B1_M16_024", title: "L’assurance maladie du régime général (Type: Leçons)" },
+                            { id: "B1_M16_025", title: "Cas Analyse d'une documentation juridique (Type: Exercices)" },
+                            { id: "B1_M16_026", title: "Cas Anthony | La branche assurance maladie du régime général (Type: Exercices)" },
+                            { id: "B1_M16_027", title: "Cas Marie Line | La branche assurance maladie du régime général (Type: Exercices)" },
+                            { id: "B1_M16_028", title: "Application : Construire une politique de compensations and benefits" }
+                        ]
+                    },
+                    {
+                        id: "B1_M17", title: "Piloter le changement structurel d’une entreprise",
+                        lecons: [
+                            { id: "B1_M17_001", title: "Les préalables à une stratégie RSE" },
+                            { id: "B1_M17_002", title: "Le cadre législatif et réglementaire" },
+                            { id: "B1_M17_003", title: "Quelques obligations réglementaires relatives à la RSE en France" },
+                            { id: "B1_M17_004", title: "Des actions volontaristes possibles relatives à la RSE" },
+                            { id: "B1_M17_005", title: "La carte de transformation" },
+                            { id: "B1_M17_006", title: "La communication en externe et en interne sur la RSE" },
+                            { id: "B1_M17_007", title: "L'entrepreneuriat responsable et durable" },
+                            { id: "B1_M17_008", title: "Les enjeux de la transformation digitale" },
+                            { id: "B1_M17_009", title: "Les deux chantiers préliminaires à la TD" },
+                            { id: "B1_M17_010", title: "Application : Piloter le changement structurel d'une entreprise" }
+                        ]
+                    },
+                    {
+                        id: "B1_M18", title: "Participer au déploiement d’un projet de transformation au sein de l’organisation",
+                        lecons: [
+                            { id: "B1_M18_001", title: "Les projets de transformation" },
+                            { id: "B1_M18_002", title: "Le diagnostic de la transformation" },
+                            { id: "B1_M18_003", title: "Les évaluations des impacts" },
+                            { id: "B1_M18_004", title: "Les interactions et les humains" },
+                            { id: "B1_M18_005", title: "Le DRH project manager" },
+                            { id: "B1_M18_006", title: "Les modes de gestion de projet dits 'classiques'" },
+                            { id: "B1_M18_007", title: "Les méthodologies agiles" },
+                            { id: "B1_M18_008", title: "Les processus et les disciplines de la gestion de projet selon le PMBOK" },
+                            { id: "B1_M18_009", title: "Le pilotage du projet" },
+                            { id: "B1_M18_010", title: "Les acteurs et les ressources du projet" },
+                            { id: "B1_M18_011", title: "La première découpe du projet" },
+                            { id: "B1_M18_012", title: "La construction du planning" },
+                            { id: "B1_M18_013", title: "Le rétroplanning" },
+                            { id: "B1_M18_014", title: "La gestion du budget du projet" },
+                            { id: "B1_M18_015", title: "Application : Faire face aux évolutions RH" }
+                        ]
+                    },
+                    {
+                        id: "B1_M19", title: "Piloter les impacts en matière de droit de la responsabilité",
+                        lecons: [
+                            { id: "B1_M19_001", title: "Onboarding vidéo : Piloter les impacts en matière de droit de la responsabilité" },
+                            { id: "B1_M19_002", title: "Les bases du droit de la responsabilité" },
+                            { id: "B1_M19_003", title: "La responsabilité des dirigeants et des administrateurs" },
+                            { id: "B1_M19_004", title: "La responsabilité des professionnel" },
+                            { id: "B1_M19_005", title: "La responsabilité environnementale" },
+                            { id: "B1_M19_006", title: "La responsabilité en matière de données personnelles" },
+                            { id: "B1_M19_007", title: "La responsabilité pénale des entreprises" },
+                            { id: "B1_M19_008", title: "Offboarding vidéo : Piloter les impacts en matière de droit de la responsabilité" },
+                            { id: "B1_M19_009", title: "Application : Piloter les impacts en matière de droit de la responsabilité" },
+                            { id: "B1_M19_010", title: "Auto-évaluation : Piloter les impacts en matière de droit de la responsabilité" }
+                        ]
+                    }
+                ]
+            },
+            "B2": {
+                title: "Accompagnement juridique et RH des opérations de l’entreprise et de ses acteurs internes",
+                color: '#A3B8A7',
+                modules: [
+                    {
+                        id: "B2_M01", title: "Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction",
+                        lecons: [
+                            { id: "B2_M01_001", title: "Onboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction" },
+                            { id: "B2_M01_002", title: "Introduction au conseil juridique" },
+                            { id: "B2_M01_003", title: "Introduction à la conformité réglementaire" },
+                            { id: "B2_M01_004", title: "Identification des problématiques juridiques" },
+                            { id: "B2_M01_005", title: "Recherche juridique et documentation" },
+                            { id: "B2_M01_006", title: "Analyse des risques juridiques" },
+                            { id: "B2_M01_007", title: "Communication et présentation orale des recommandations" },
+                            { id: "B2_M01_008", title: "Gestion des litiges contractuels" },
+                            { id: "B2_M01_009", title: "Veille juridique et mise à jour des connaissances" },
+                            { id: "B2_M01_010", title: "Auto-Evaluation - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction" },
+                            { id: "B2_M01_011", title: "Application - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction" },
+                            { id: "B2_M01_012", title: "Offboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction" }
+                        ]
+                    },
+                    {
+                        id: "B2_M02", title: "Piloter le changement structurel d’une entreprise",
+                        lecons: [
+                            { id: "B2_M02_001", title: "Le cadre législatif et réglementaire" },
+                            { id: "B2_M02_002", title: "Des actions volontaristes possibles relatives à la RSE" },
+                            { id: "B2_M02_003", title: "La carte de transformation" },
+                            { id: "B2_M02_004", title: "La communication en externe et en interne sur la RSE" },
+                            { id: "B2_M02_005", title: "Application : Piloter le changement structurel d'une entreprise" }
+                        ]
+                    },
+                    {
+                        id: "B2_M03", title: "Gérer le budget de son service",
+                        lecons: [
+                            { id: "B2_M03_001", title: "Onboarding - Gérer le budget de son service" },
+                            { id: "B2_M03_002", title: "Budget prévisionnel : présentation et méthode" },
+                            { id: "B2_M03_003", title: "Outils de suivi et de pilotage : tableaux, indicateurs" },
+                            { id: "B2_M03_004", title: "Adapter les postes de dépense" },
+                            { id: "B2_M03_005", title: "Gérer le budget alloué à un service de l’entreprise" },
+                            { id: "B2_M03_006", title: "Suivi budgétaire et analyse" },
+                            { id: "B2_M03_007", title: "Gestion des imprévus budgétaires" },
+                            { id: "B2_M03_008", title: "Évaluation des performances budgétaires" },
+                            { id: "B2_M03_009", title: "Communication dans la gestion budgétaire" },
+                            { id: "B2_M03_010", title: "Étude de cas : Gestion budgétaire d'un service" },
+                            { id: "B2_M03_011", title: "Auto-évaluation - Gérer le budget de son service" },
+                            { id: "B2_M03_012", title: "Application - Gérer le budget de son service" },
+                            { id: "B2_M03_013", title: "Offboarding : Synthèse de la gestion budgétaire" }
+                        ]
+                    },
+                    {
+                        id: "B2_M04", title: "Comprendre et maîtriser le droit des contrats commerciaux et des sociétés",
+                        lecons: [
+                            { id: "B2_M04_001", title: "Onboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés" },
+                            { id: "B2_M04_002", title: "Principes de base des contrats commerciaux" },
+                            { id: "B2_M04_003", title: "Les formes juridiques des sociétés" },
+                            { id: "B2_M04_004", title: "Rédaction et gestion des documents juridiques" },
+                            { id: "B2_M04_005", title: "Focus sur les statuts juridiques - SARL" },
+                            { id: "B2_M04_006", title: "Focus sur les statuts juridiques - SA" },
+                            { id: "B2_M04_007", title: "Focus sur les statuts juridiques - SAS" },
+                            { id: "B2_M04_008", title: "Impact des contrats commerciaux sur la gestion RH" },
+                            { id: "B2_M04_009", title: "Participation aux assemblées générales et décisions collectives" },
+                            { id: "B2_M04_010", title: "Offboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés" },
+                            { id: "B2_M04_011", title: "Auto-évaluation - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés" },
+                            { id: "B2_M04_012", title: "Application - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés" },
+                            { id: "B2_M04_013", title: "Live 1 : Focus théorique sur le droit des contrats commerciaux" },
+                            { id: "B2_M04_014", title: "Live 2 : Focus pratique sur les formes juridiques des sociétés" }
+                        ]
+                    },
+                    {
+                        id: "B2_M05", title: "Rédiger un document juridique",
+                        lecons: [
+                            { id: "B2_M05_001", title: "Les éléments d'un document juridique" },
+                            { id: "B2_M05_002", title: "Les bonnes pratiques de la rédaction de documents juridiques" },
+                            { id: "B2_M05_003", title: "La rédaction des documents pour un avocat" },
+                            { id: "B2_M05_004", title: "La rédaction des documents pour un huissier" },
+                            { id: "B2_M05_005", title: "La rédaction des documents pour un magistrat" },
+                            { id: "B2_M05_006", title: "La rédaction des documents pour un notaire" }
+                        ]
+                    },
+                    { id: "B2_M06", title: "Intégrer les technologies juridiques dans la gestion contractuelle", lecons: [] },
+                    {
+                        id: "B2_M07", title: "Utiliser les concepts de base de l’ingénierie pédagogique",
+                        lecons: [
+                            { id: "B2_M07_001", title: "Les méthodes pédagogiques" },
+                            { id: "B2_M07_002", title: "Les concept, modalités et démarches pédagogiques" }
+                        ]
+                    },
+                    {
+                        id: "B2_M08", title: "Scénariser la formation",
+                        lecons: [
+                            { id: "B2_M08_001", title: "Les objectifs pédagogiques" },
+                            { id: "B2_M08_002", title: "Les environnements et services numériques mobilisables" },
+                            { id: "B2_M08_003", title: "Les principales obligations des organismes de formation sur le handicap" },
+                            { id: "B2_M08_004", title: "Les étapes clés structurant un temps de formation" },
+                            { id: "B2_M08_005", title: "La construction du scénario pédagogique" },
+                            { id: "B2_M08_006", title: "Les actions de sensibilisation" },
+                            { id: "B2_M08_007", title: "Application sur la formation aux problématiques et risques juridiques" }
+                        ]
+                    },
+                    {
+                        id: "B2_M09", title: "Piloter une politique d’inclusion dans une entreprise",
+                        lecons: [
+                            { id: "B2_M09_001", title: "La politique d'inclusion en entreprise" },
+                            { id: "B2_M09_002", title: "Les enjeux de la diversité en entreprise" },
+                            { id: "B2_M09_003", title: "La lutte contre les discriminations" },
+                            { id: "B2_M09_004", title: "L'égalité Femmes / Hommes" },
+                            { id: "B2_M09_005", title: "La déconstruction des stéréotypes" },
+                            { id: "B2_M09_006", title: "La prévention du harcèlement" },
+                            { id: "B2_M09_007", title: "Les libertés individuelles dans l'entreprise" },
+                            { id: "B2_M09_008", title: "Le référent handicap en entreprise" },
+                            { id: "B2_M09_009", title: "La qualité de vie et des conditions de travail" },
+                            { id: "B2_M09_010", title: "Le bonheur au travail" },
+                            { id: "B2_M09_011", title: "Le management interculturel" },
+                            { id: "B2_M09_012", title: "Le management intergénérationnel" },
+                            { id: "B2_M09_013", title: "Application : Piloter une politique d'inclusion dans une entreprise" }
+                        ]
+                    },
+                    {
+                        id: "B2_M10", title: "Manager une équipe d’un service juridique et transverse",
+                        lecons: [
+                            { id: "B2_M10_001", title: "Onboarding - Manager une équipe d'un service juridique et transverse" },
+                            { id: "B2_M10_002", title: "Identifier les compétences de l'équipe" },
+                            { id: "B2_M10_003", title: "Fixer des objectifs pertinents" },
+                            { id: "B2_M10_004", title: "Méthodes et outils de suivi des activités" },
+                            { id: "B2_M10_005", title: "Application des méthodes de suivi" },
+                            { id: "B2_M10_006", title: "Résolution de problèmes et gestion des conflits" },
+                            { id: "B2_M10_007", title: "Gestion du temps et des priorités" },
+                            { id: "B2_M10_008", title: "Gestion de projet au sein d'une équipe juridique" },
+                            { id: "B2_M10_009", title: "Auto-Evaluation - Manager une équipe d'un service juridique et transverse" },
+                            { id: "B2_M10_010", title: "Application - Manager une équipe d'un service juridique et transverse" },
+                            { id: "B2_M10_011", title: "Offboarding - Manager une équipe d'un service juridique et transverse" }
+                        ]
+                    },
+                    {
+                        id: "B2_M11", title: "Diagnostiquer les pratiques RH au sein de l’organisation",
+                        lecons: [
+                            { id: "B2_M11_001", title: "L'histoire et l'évolution de la fonction RH" },
+                            { id: "B2_M11_002", title: "L'organisation du travail : évolutions et défis" },
+                            { id: "B2_M11_003", title: "L'organisation de la fonction RH" },
+                            { id: "B2_M11_004", title: "Le partage de la fonction RH" },
+                            { id: "B2_M11_005", title: "Les défis de la fonction RH" },
+                            { id: "B2_M11_006", title: "La place des RH dans l'architecture organisationnelle" },
+                            { id: "B2_M11_007", title: "L'architecture RH au service de la stratégie" },
+                            { id: "B2_M11_008", title: "Le climat social d'une entreprise" },
+                            { id: "B2_M11_009", title: "Le baromètre social" },
+                            { id: "B2_M11_010", title: "L'audit : définition" },
+                            { id: "B2_M11_011", title: "L'audit organisationnel" },
+                            { id: "B2_M11_012", title: "L'audit social" },
+                            { id: "B2_M11_013", title: "Les orientations RH après audit social" },
+                            { id: "B2_M11_014", title: "Application : Diagnostiquer les pratiques RH au sein de l’organisation" }
+                        ]
+                    },
+                    {
+                        id: "B2_M12", title: "Connaître le droit du contrat de travail",
+                        lecons: [
+                            { id: "B2_M12_001", title: "La formation du contrat de travail" },
+                            { id: "B2_M12_002", title: "L’exécution du contrat de travail" },
+                            { id: "B2_M12_003", title: "Le contrat de travail à durée indéterminée" },
+                            { id: "B2_M12_004", title: "Le CDD et le contrat de travail temporaire" },
+                            { id: "B2_M12_005", title: "Le contrat de travail à temps partiel" },
+                            { id: "B2_M12_006", title: "Les contrats de formation" },
+                            { id: "B2_M12_007", title: "L’évolution des conditions d’emploi" }
+                        ]
+                    },
+                    {
+                        id: "B2_M13", title: "Gérer la rupture du contrat de travail",
+                        lecons: [
+                            { id: "B2_M13_001", title: "La gestion de la fin de CDD" },
+                            { id: "B2_M13_002", title: "La gestion d'une démission" },
+                            { id: "B2_M13_003", title: "La gestion d'un licenciement économique" },
+                            { id: "B2_M13_004", title: "La gestion d'un départ à la retraite" },
+                            { id: "B2_M13_005", title: "Les fins de contrats" }
+                        ]
+                    },
+                    {
+                        id: "B2_M14", title: "Établir les documents liés à la vie du contrat de travail",
+                        lecons: [
+                            { id: "B2_M14_001", title: "La rédaction d'un CDI et d'un CDD" },
+                            { id: "B2_M14_002", title: "Application : Etablir les documents administratifs" }
+                        ]
+                    }
+                ]
+            },
+            "B3": {
+                title: "Gestion des précontentieux et des contentieux",
+                color: '#D1C7B7',
+                modules: [
+                    {
+                        id: "B3_M01", title: "Anticiper les risques de contentieux",
+                        lecons: [
+                            { id: "B3_M01_001", title: "Onboarding - Anticiper les risques de contentieux" },
+                            { id: "B3_M01_002", title: "Introduction à la cartographie des risques" },
+                            { id: "B3_M01_003", title: "Identifier les risques juridiques" },
+                            { id: "B3_M01_004", title: "Responsabilité contractuelle et lettres de mise en demeure" },
+                            { id: "B3_M01_005", title: "Protocole transactionnel" },
+                            { id: "B3_M01_006", title: "Modes Alternatifs de Règlement des Différends (MARD)" },
+                            { id: "B3_M01_007", title: "Importance de l'archivage" },
+                            { id: "B3_M01_008", title: "Auto-évaluation - Anticiper les risques de contentieux" },
+                            { id: "B3_M01_009", title: "Application - Anticiper les risques de contentieux" },
+                            { id: "B3_M01_010", title: "Offboarding - Anticiper les risques de contentieux" }
+                        ]
+                    },
+                    {
+                        id: "B3_M02", title: "Conseil stratégique en contentieux",
+                        lecons: [
+                            { id: "B3_M02_001", title: "Onboarding - Conseil stratégique en contentieux" },
+                            { id: "B3_M02_002", title: "Introduction au contentieux dans l’entreprise" },
+                            { id: "B3_M02_003", title: "Analyse des risques et évaluation des preuves" },
+                            { id: "B3_M02_004", title: "Conseil stratégique" },
+                            { id: "B3_M02_005", title: "Stratégies contentieuses par domaine juridique" },
+                            { id: "B3_M02_006", title: "Rédaction des écrits judiciaires" },
+                            { id: "B3_M02_007", title: "Voies de recours" },
+                            { id: "B3_M02_008", title: "Modalités et voies de recours" },
+                            { id: "B3_M02_009", title: "Négociation et résolution alternative des conflits" },
+                            { id: "B3_M02_010", title: "Stratégies de négociation avancées" },
+                            { id: "B3_M02_011", title: "Auto-évaluation - Conseil stratégique en contentieux" },
+                            { id: "B3_M02_012", title: "Application - Conseil stratégique en contentieux" },
+                            { id: "B3_M02_013", title: "Offboarding - Conseil stratégique en contentieux" }
+                        ]
+                    },
+                    { id: "B3_M03", title: "Elaborer une stratégie de gestion de crise juridique", lecons: [] },
+                    {
+                        id: "B3_M04", title: "Gestion des contentieux judiciaires",
+                        lecons: [
+                            { id: "B3_M04_001", title: "Onboarding - Gestion des contentieux judiciaires" },
+                            { id: "B3_M04_002", title: "Principes du procès civil en droit français" },
+                            { id: "B3_M04_003", title: "Ordres de juridiction et compétences" },
+                            { id: "B3_M04_004", title: "Règles de procédure civile et commerciale" },
+                            { id: "B3_M04_005", title: "Règles de procédure prud’hommale" },
+                            { id: "B3_M04_006", title: "Règles de procédure pénale" },
+                            { id: "B3_M04_007", title: "Modes de preuve et exemples pratiques" },
+                            { id: "B3_M04_008", title: "Exécution des décisions judiciaires" },
+                            { id: "B3_M04_009", title: "Conclusion d'un accord transactionnel" },
+                            { id: "B3_M04_010", title: "Évaluation des risques liés aux verdicts" },
+                            { id: "B3_M04_011", title: "Stratégie contentieuse et rédaction de notes explicatives" },
+                            { id: "B3_M04_012", title: "Auto-évaluation - Gestion des contentieux judiciaires" },
+                            { id: "B3_M04_013", title: "Application - Gestion des contentieux judiciaires" },
+                            { id: "B3_M04_014", title: "Offboarding - Gestion des contentieux judiciaires" }
+                        ]
+                    },
+                    { id: "B3_M05", title: "Piloter l’exécution des décisions judiciaires", lecons: [] }
+                ]
+            }
+        };
 
-  <!-- Liste des cours -->
-  <div id="course-list" class="space-y-6">
-    <div class="text-center p-8 text-lg text-gray-500" id="loading-indicator">
-      Chargement des données de progression... ⏳
-    </div>
-  </div>
-</div>
+        const programStats = {
+            blocCount: 4,
+            moduleCount: 49,
+            leconCount: 387,
+            leconsPerBloc: [97, 142, 111, 37]
+        };
 
-<!-- Bouton remonter -->
-<button id="scroll-to-top"
-        class="fixed bottom-4 right-4 bg-blue-700 hover:bg-blue-800 text-white p-3 rounded-full shadow-lg z-30 opacity-0 transform translate-y-4"
-        aria-label="Remonter en haut"
-        title="Remonter en haut"
-        onclick="window.scrollTo({top:0, behavior:'smooth'})">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-  </svg>
-</button>
+        /* ---------- SAFE STORAGE ---------- */
+        const completedLeconsKey = 'completedLecons';
+        let storageOK = true;
+        (function testStorage(){
+            try {
+                const t = '__t__';
+                localStorage.setItem(t, '1');
+                localStorage.removeItem(t);
+            } catch(e){
+                storageOK = false;
+                console.warn('localStorage indisponible, bascule en mémoire volatile.', e);
+            }
+        })();
+        let memoryCompleted = {};
 
-<script>
-/* ==============================
-   Nouvelle liste (format underscore)
-   ============================== */
-const COURSE_DATA_RAW = `
-B0_____Fondamentaux du droit
-B0_M01___Mise à niveau en droit social
-B0_M01_001_La notion de droit du travail
-B0_M01_002_La formation du contrat de travail
-B0_M01_003_Maîtriser la rédaction d’un contrat de travail
-B0_M01_004_L’exécution du contrat de travail
-B0_M01_005_Le contrat de travail à durée indéterminée
-B0_M01_006_Le CDD et le contrat de travail temporaire
-B0_M01_007_Le contrat de travail à temps partiel
-B0_M01_008_Les contrats de formation
-B0_M01_009_La rédaction du contrat de travail
-B0_M01_010_Application : Etablir les contrats de travail
-B0_M01_011_Comment et pourquoi se former à gestion des parcours salariés
-B0_M01_012_Le recrutement
-B0_M01_013_Les formalités administratives d'embauche
-B0_M01_014_La suspension du contrat de travail
-B0_M01_015_L'édition des documents de suspension du contrat
-B0_M01_016_La rupture du contrat de travail : introduction
-B0_M01_017_Le licenciement
-B0_M01_018_Les autres modes de rupture du contrat de travail
-B0_M01_019_Les fins de contrat : indemnité de précarité, ICP, Indemnité RTT, et autres indemnités
-B0_M01_020_Les fins de contrat : rupture conventionnelle, départ et mise à la retraite
-B0_M01_021_Les formalités de rupture du contrat de travail
-B0_M01_022_L'édition des documents de fin de contrat
-B0_M01_023_Synthèse et application : Traiter les entrées et sorties des salariés
-B0_M02___Mise à niveau en droit - L’organisation judiciaire
-B0_M02_001_L'organisation judiciaire européenne
-B0_M02_002_L'organisation judiciaire nationale
-B0_M02_003_L'action en justice
-B0_M02_004_Les MARD
-B0_M02_005_Application : Comprendre l'organisation judiciaire
-B0_M03__Mise à niveau en droit - Propriété intellectuelle et industrielle
-B0_M03_001_La théorie du patrimoine
-B0_M03_002_La propriété
-B0_M03_003_Le fonds de commerce et le contrat de bail commercial
-B0_M03_004_La propriété industrielle : brevet, marque, dessins et modèles
-B0_M03_005_La propriété littéraire et artistique : le droit d'auteur
-B0_M03_006_Le droit de l'informatique et de la propriété industrielle
-B0_M03_007_La protection juridique des sites internet et des créations numériques
-B0_M03_008_Les règles juridiques d'utilisation d'internet
-B0_M03_009_Application : Caractériser les biens
-B0_M04__Mise à niveau en droit - Théorie générale du contrat
-B0_M04_001_La théorie générale du contrat
-B0_M04_002_La validité du contrat
-B0_M04_003_Les clauses contractuelles particulières
-B0_M04_004_L'exécution du contrat
-B0_M04_005_L'inexécution du contrat
-B0_M04_006_Application : Maîtriser la théorie générale du contrat
-B0_M05__Mise à niveau en droit - Les contrats de l’entreprise
-B0_M05_001_Le contrat de vente du fonds de commerce
-B0_M05_002_Le contrat de location-gérance du fonds de commerce
-B0_M05_003_Le contrat de vente
-B0_M05_004_Les contrats de consommation
-B0_M05_005_Le compte de dépôt bancaire
-B0_M05_006_Les contrats de crédit aux entreprises
-B0_M05_007_Les sûretés
-B0_M06__Mise à niveau en droit - L’entreprise et ses responsabilités
-B0_M06_001_Application : Maîtriser les contrats de l'entreprise
-B0_M06_002_Les responsabilités civile et pénale
-B0_M06_003_La responsabilité pénale
-B0_M06_004_La procédure pénale
-B0_M06_005_La responsabilité civile extracontractuelle
-B0_M06_006_Les responsabilités du fait des produits défectueux et du préjudice environnemental
-B0_M06_007_Application : L'entreprise et ses responsabilités
-B0_M07__Mise à niveau en droit des sociétés
-B0_M07_001_Les notions d'entreprise et de société
-B0_M07_002_Les éléments constitutifs du contrat de société
-B0_M07_003_Le contrat de société
-B0_M07_004_La constitution de la société
-B0_M07_005_La société en formation
-B0_M07_006_Les attributs de la personnalité morale
-B0_M07_007_Les notions d'intérêt social et d'abus de droit
-B0_M07_008_Les organes de gestion
-B0_M07_009_Les associés
-B0_M07_010_Le contrôle de la société
-B0_M07_011_Le statut du commissaire aux comptes
-B0_M07_012_La dissolution et la liquidation des sociétés
-B0_M07_013_La transformation des sociétés
-B0_M07_014_Les sociétés sans personnalité juridique
-B0_M07_015_Application : Comprendre la nature et le fonctionnement d'une entreprise en société
-B0_M07_016_Les formes juridiques des sociétés
-B0_M07_017_Rédaction et gestion des documents juridiques
-B0_M07_018_Focus sur les statuts juridiques - SARL
-B0_M07_019_Focus sur les statuts juridiques - SA
-B0_M07_020_Focus sur les statuts juridiques - SAS
-B0_M08___Mise à niveau en droit fiscal
-B0_M08__001_Les caractéristiques et les sources du droit fiscal
-B0_M08__002_La classification des impôts et taxes
-B0_M08__003_Organisation et rôle de l'administration fiscale et veille fiscale
-B0_M08__004_Application : Introduire le droit fiscal
-B0_M09___Mise à niveau en droit de la concurrence
-B0_M09__001_Le contrôle des concentrations
-B0_M09__002_Les pratiques anticoncurrentielles
-B0_M09__003_L'entreprise et la concurrence déloyale
-B0_M09__004_La transparence et les pratiques restrictives de concurrence
-B0_M09__005_Application : Maîtriser les situations contraires au droit de la concurrence
-B0_M10___Mise à niveau en droit des procédures collectives (sauvegarde, redressement, liquidation)
-B0_M10__001_L'évolution du droit de l'entreprise en difficulté
-B0_M10__002_La prévention des difficultés de l'entreprise
-B0_M10__003_Le traitement amiable des difficultés par la procédure de conciliation
-B0_M10__004_Le traitement judiciaire par les procédures collectives
-B0_M10__005_La procédure de sauvegarde
-B0_M10__006_Le sort des créanciers en période d'observation
-B0_M10__007_Le plan de sauvegarde ordinaire et la sauvegarde accélérée
-B0_M10__008_La procédure de redressement judiciaire
-B0_M10__009_La procédure de liquidation judiciaire
-B0_M10__010_Application : Pérenniser l'entreprise en difficulté
-B0_M11___Mise à niveau en droit de l’intelligence artificielle
-B0_M11__001_Un droit de l'IA dans les pratiques de l'entreprise
-B1_____Pilotage stratégique et opérationnel de la fonction juridique et RH
-B1_M01__Optimiser et présenter la veille
-B1_M01_001_Délimiter et structurer une veille pour une entreprise
-B1_M01_002_Développer un réseau d’experts pour une veille partagée
-B1_M02__Réaliser une veille juridique et sociale
-B1_M02_001_Les différents types de veille
-B1_M02_002_Introduction : la notion de veille juridique
-B1_M02_003_Comment faire de la veille juridique
-B1_M02_004_Les principaux sites d'actualité juridique
-B1_M02_005_Les différents flux juridiques officiels
-B1_M02_006_La réalisation de veille juridique
-B1_M02_007_Les outils pour une veille juridique efficace
-B1_M02_008_Le pilotage de veille juridique 
-B1_M02_009_Les grandes tendances juridiques en France et leurs effets sur l’organisation
-B1_M03__Procéder de la veille juridique à la recommandation stratégique
-B1_M03_001_Onboarding - Procéder de la veille juridique à la recommandation stratégique
-B1_M03_002_Utilisation de Village Justice et experts LinkedIn
-B1_M03_003_Présentation des bases de données juridiques et outils de veille
-B1_M03_004_Méthodologie de recherche et d'organisation de la veille
-B1_M03_005_Techniques de communication écrite
-B1_M03_006_Introduction aux bases de données juridiques
-B1_M03_007_Analyse des évolutions législatives
-B1_M03_008_Application - Recherche et présentation d'informations
-B1_M03_009_Reporting extra-financier et directives
-B1_M03_010_Mise en situation pratique de la veille juridique
-B1_M03_011_Impact des évolutions législatives internationales
-B1_M03_012_Outils numériques avancés pour la veille juridique
-B1_M03_013_Auto-Evaluation - Procéder de la veille juridique à la recommandation stratégique
-B1_M03_014_Application - Procéder de la veille juridique à la recommandation stratégique
-B1_M03_015_Offboarding - Procéder de la veille juridique à la recommandation stratégique
-B1_M04__La veille juridique en pratique
-B1_M04_001_Prise de connaissance et méthodologie d'utilisation des sites institutionnels
-B1_M04_002_Réaliser une note interne à partir d'une veille juridique en droit des données personnelles
-B1_M04_003_Réaliser une note interne à partir d'une veille juridique en matière de TVA
-B1_M04_004_Réaliser une note interne à partir d'une veille juridique en droit des contrats
-B1_M05__Définir la stratégie juridique de l’entreprise
-B1_M06__Intégrer des LegalTech et de l’IA dans la stratégie juridique
-B1_M07__Maîtriser la méthodologie complète de l’audit juridique
-B1_M08__Elaborer un plan d’action correctives et préventives
-B1_M09__Digitaliser et automatiser les processus juridiques
-B1_M10__Concevoir et rédiger des politiques de conformité
-B1_M11__Déployer et piloter les dispositifs de conformité
-B1_M12__Optimiser et sécuriser l’archivage
-B1_M12_001_Optimiser et sécuriser l’archivage
-B1_M12_002_Introduction au RGPD et archivage numérique
-B1_M12_003_Les règles d’archivage temporaire et l’anonymisation
-B1_M12_004_Minimisation des données et droit d’accès
-B1_M12_005_Sécurisation des accès et des données archivées
-B1_M12_006_Conséquences des violations de données
-B1_M12_007_Durées de conservation légale des documents
-B1_M12_008_Exemples de solutions techniques disponibles
-B1_M12_009_Élaboration d’une procédure d’archivage numérique
-B1_M12_010_Présentation des procédures d’archivage par secteur d’activité
-B1_M12_011_Auto-Evaluation - Optimiser et sécuriser l’archivage
-B1_M12_012_Application - Optimiser et sécuriser l’archivage
-B1_M12_013_Offboarding - Optimiser et sécuriser l’archivage
-B1_M13__Piloter une équipe RH
-B1_M13_001_Une fonction RH alignée avec les attentes et besoins de ses clients ?
-B1_M13_002_DRH et défis digitaux
-B1_M13_003_La mesure de la performance de la fonction RH
-B1_M13_004_Décliner la stratégie en action
-B1_M13_005_Des compétences repérées à l'équipe opérationnelle
-B1_M13_006_L'identification des compétences
-B1_M13_007_Évaluer le niveau de compétences
-B1_M13_008_Débriefer toute acquisition de compétence
-B1_M13_009_Acter la compétence acquise
-B1_M13_010_Talent Review
-B1_M13_011_Capitaliser sur l’expérience, tracer une roadmap
-B1_M13_012_Application : Piloter une équipe RH
-B1_M14__Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
-B1_M14_001_Les théories de l'organisation au service du management
-B1_M14_002_Le management et le manager
-B1_M14_003_Le management des individus et des groupes
-B1_M14_004_Le management à distance
-B1_M14_005_Les plateformes de travail collaboratives
-B1_M14_006_Fixer des objectifs SMART
-B1_M14_007_L'utilité du suivi de la performance
-B1_M14_008_Les indicateurs de suivi selon les objectifs
-B1_M14_009_La fixation des objectifs de l'équipe
-B1_M14_010_Le suivi des objectifs de l'équipe
-B1_M14_011_Faire faire sans se substituer
-B1_M14_012_Intégrer la vision (cadre de référence) de l’autre
-B1_M14_013_Obtenir régulièrement
-B1_M14_014_Application : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
-B1_M15__Comprendre et analyser des situations en droit de la sécurité sociale
-B1_M15_001_Onboarding vidéo : Comprendre et analyser des situations en droit de la sécurité sociale
-B1_M15_002_Introduction au droit de la sécurité sociale
-B1_M15_003_Le droit européen de la sécurité sociale
-B1_M15_004_Les régimes de la sécurité sociale
-B1_M15_005_Les régimes complémentaires de sécurité sociale
-B1_M15_006_Le contentieux en droit de la sécurité sociale
-B1_M15_007_La veille juridique et actualité
-B1_M15_008_Offboarding vidéo : Synthèse - Comprendre et analyser des situations en droit de la sécurité sociale
-B1_M15_009_Application : Comprendre et analyser des situations en droit de la sécurité sociale
-B1_M15_010_Auto-évaluation : Comprendre et analyser des situations en droit de la sécurité sociale
-B1_M16__Construire une politique de compensations and benefits
-B1_M16_001_La politique de rémunération
-B1_M16_002_La politique de rémunération et les politiques RH
-B1_M16_003_La politique de rémunération : élaborer et piloter
-B1_M16_004_La mise en oeuvre de sa politique salariale
-B1_M16_005_L'optimisation de sa politique salariale
-B1_M16_006_L'évaluation d'impact de la politique de rémunération
-B1_M16_007_Le Comp & Ben Manager
-B1_M16_008_Le benchmark de rémunération
-B1_M16_009_Les outils de benchmark pour s’assurer de la meilleure compétitivité en matière de rémunération
-B1_M16_010_Les primes et avantages alliés pour convaincre
-B1_M16_011_L’entretien de décision salariale
-B1_M16_012_Présentation de la rémunération brute et le décompte du temps de travail
-B1_M16_013_La rémunération brute : le salaire de base, les primes et la retenue pour absence
-B1_M16_014_La rémunération brute : le salaire de base, les primes et la retenue pour absence (Type: Leçons)
-B1_M16_015_Cas pratique - Salaire de base (Type: Exercices)
-B1_M16_016_Cas pratique - Primes et indemnités (Type: Exercices)
-B1_M16_017_La rémunération brute : les avantages en nature
-B1_M16_018_Les salaires net, imposable et à payer
-B1_M16_019_L’association des salariés aux performances de l’entreprise, généralités
-B1_M16_020_La protection sociale, généralités
-B1_M16_021_La protection sociale, généralités (Type: Leçons)
-B1_M16_022_Applications | Généralités (Type: Exercices)
-B1_M16_023_L’assurance maladie du régime général
-B1_M16_024_L’assurance maladie du régime général (Type: Leçons)
-B1_M16_025_Cas Analyse d'une documentation juridique (Type: Exercices)
-B1_M16_026_Cas Anthony | La branche assurance maladie du régime général (Type: Exercices)
-B1_M16_027_Cas Marie Line | La branche assurance maladie du régime général (Type: Exercices)
-B1_M16_028_Application : Construire une politique de compensations and benefits
-B1_M17__Piloter le changement structurel d’une entreprise
-B1_M17_001_Les préalables à une stratégie RSE
-B1_M17_002_Le cadre législatif et réglementaire
-B1_M17_003_Quelques obligations réglementaires relatives à la RSE en France
-B1_M17_004_Des actions volontaristes possibles relatives à la RSE
-B1_M17_005_La carte de transformation
-B1_M17_006_La communication en externe et en interne sur la RSE
-B1_M17_007_L'entrepreneuriat responsable et durable
-B1_M17_008_Les enjeux de la transformation digitale
-B1_M17_009_Les deux chantiers préliminaires à la TD
-B1_M17_010_Application : Piloter le changement structurel d'une entreprise
-B1_M18__Participer au déploiement d’un projet de transformation au sein de l’organisation
-B1_M18_001_Les projets de transformation
-B1_M18_002_Le diagnostic de la transformation
-B1_M18_003_Les évaluations des impacts
-B1_M18_004_Les interactions et les humains
-B1_M18_005_Le DRH project manager
-B1_M18_006_Les modes de gestion de projet dits "classiques"
-B1_M18_007_Les méthodologies agiles
-B1_M18_008_Les processus et les disciplines de la gestion de projet selon le PMBOK
-B1_M18_009_Le pilotage du projet
-B1_M18_010_Les acteurs et les ressources du projet
-B1_M18_011_La première découpe du projet
-B1_M18_012_La construction du planning
-B1_M18_013_Le rétroplanning
-B1_M18_014_La gestion du budget du projet
-B1_M18_015_Application : Faire face aux évolutions RH
-B1_M19__Piloter les impacts en matière de droit de la responsabilité
-B1_M19_001_Onboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
-B1_M19_002_Les bases du droit de la responsabilité
-B1_M19_003_La responsabilité des dirigeants et des administrateurs
-B1_M19_004_La responsabilité des professionnel
-B1_M19_005_La responsabilité environnementale
-B1_M19_006_La responsabilité en matière de données personnelles
-B1_M19_007_La responsabilité pénale des entreprises
-B1_M19_008_Offboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
-B1_M19_009_Application : Piloter les impacts en matière de droit de la responsabilité
-B1_M19_010_Auto-évaluation : Piloter les impacts en matière de droit de la responsabilité
-B2_____Accompagnement juridique et RH des opérations de l’entreprise et de ses acteurs internes
-B2_M01__Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-B2_M01_001_Onboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-B2_M01_002_Introduction au conseil juridique
-B2_M01_003_Introduction à la conformité réglementaire
-B2_M01_004_Identification des problématiques juridiques
-B2_M01_005_Recherche juridique et documentation
-B2_M01_006_Analyse des risques juridiques
-B2_M01_007_Communication et présentation orale des recommandations
-B2_M01_008_Gestion des litiges contractuels
-B2_M01_009_Veille juridique et mise à jour des connaissances
-B2_M01_010_Auto-Evaluation - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-B2_M01_011_Application - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-B2_M01_012_Offboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
-B2_M02__Piloter le changement structurel d’une entreprise
-B2_M02_001_Le cadre législatif et réglementaire
-B2_M02_002_Des actions volontaristes possibles relatives à la RSE
-B2_M02_003_La carte de transformation
-B2_M02_004_La communication en externe et en interne sur la RSE
-B2_M02_005_Application : Piloter le changement structurel d'une entreprise
-B2_M03__Gérer le budget de son service
-B2_M03_001_Onboarding - Gérer le budget de son service
-B2_M03_002_Budget prévisionnel : présentation et méthode
-B2_M03_003_Outils de suivi et de pilotage : tableaux, indicateurs
-B2_M03_004_Adapter les postes de dépense
-B2_M03_005_Gérer le budget alloué à un service de l’entreprise
-B2_M03_006_Suivi budgétaire et analyse
-B2_M03_007_Gestion des imprévus budgétaires
-B2_M03_008_Évaluation des performances budgétaires
-B2_M03_009_Communication dans la gestion budgétaire
-B2_M03_010_Étude de cas : Gestion budgétaire d'un service
-B2_M03_011_Auto-évaluation - Gérer le budget de son service
-B2_M03_012_Application - Gérer le budget de son service
-B2_M03_013_Offboarding : Synthèse de la gestion budgétaire
-B2_M04__Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-B2_M04_001_Onboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-B2_M04_002_Principes de base des contrats commerciaux
-B2_M04_003_Les formes juridiques des sociétés
-B2_M04_004_Rédaction et gestion des documents juridiques
-B2_M04_005_Focus sur les statuts juridiques - SARL
-B2_M04_006_Focus sur les statuts juridiques - SA
-B2_M04_007_Focus sur les statuts juridiques - SAS
-B2_M04_008_Impact des contrats commerciaux sur la gestion RH
-B2_M04_009_Participation aux assemblées générales et décisions collectives
-B2_M04_010_Offboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-B2_M04_011_Auto-évaluation - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-B2_M04_012_Application - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
-B2_M04_013_Live 1 : Focus théorique sur le droit des contrats commerciaux
-B2_M04_014_Live 2 : Focus pratique sur les formes juridiques des sociétés
-B2_M05__Rédiger un document juridique
-B2_M05_001_Les éléments d'un document juridique
-B2_M05_002_Les bonnes pratiques de la rédaction de documents juridiques
-B2_M05_003_La rédaction des documents pour un avocat
-B2_M05_004_La rédaction des documents pour un huissier
-B2_M05_005_La rédaction des documents pour un magistrat
-B2_M05_006_La rédaction des documents pour un notaire
-B2_M06__Intégrer les technologies juridiques dans la gestion contractuelle
-B2_M07__Utiliser les concepts de base de l’ingénierie pédagogique
-B2_M07_001_Les méthodes pédagogiques
-B2_M07_002_Les concept, modalités et démarches pédagogiques
-B2_M08__Scénariser la formation
-B2_M08_001_Les objectifs pédagogiques
-B2_M08_002_Les environnements et services numériques mobilisables
-B2_M08_003_Les principales obligations des organismes de formation sur le handicap
-B2_M08_004_Les étapes clés structurant un temps de formation
-B2_M08_005_La construction du scénario pédagogique
-B2_M08_006_Les actions de sensibilisation
-B2_M08_007_Application sur la formation aux problématiques et risques juridiques
-B2_M09__Piloter une politique d’inclusion dans une entreprise
-B2_M09_001_La politique d'inclusion en entreprise
-B2_M09_002_Les enjeux de la diversité en entreprise
-B2_M09_003_La lutte contre les discriminations
-B2_M09_004_L'égalité Femmes / Hommes
-B2_M09_005_La déconstruction des stéréotypes
-B2_M09_006_La prévention du harcèlement
-B2_M09_007_Les libertés individuelles dans l'entreprise
-B2_M09_008_Le référent handicap en entreprise
-B2_M09_009_La qualité de vie et des conditions de travail
-B2_M09_010_Le bonheur au travail
-B2_M09_011_Le management interculturel
-B2_M09_012_Le management intergénérationnel
-B2_M09_013_Application : Piloter une politique d'inclusion dans une entreprise
-B2_M10__Manager une équipe d’un service juridique et transverse
-B2_M10_001_Onboarding - Manager une équipe d'un service juridique et transverse
-B2_M10_002_Identifier les compétences de l'équipe
-B2_M10_003_Fixer des objectifs pertinents
-B2_M10_004_Méthodes et outils de suivi des activités
-B2_M10_005_Application des méthodes de suivi
-B2_M10_006_Résolution de problèmes et gestion des conflits
-B2_M10_007_Gestion du temps et des priorités
-B2_M10_008_Gestion de projet au sein d'une équipe juridique
-B2_M10_009_Auto-Evaluation - Manager une équipe d'un service juridique et transverse
-B2_M10_010_Application - Manager une équipe d'un service juridique et transverse
-B2_M10_011_Offboarding - Manager une équipe d'un service juridique et transverse
-B2_M11__Diagnostiquer les pratiques RH au sein de l’organisation
-B2_M11_001_L'histoire et l'évolution de la fonction RH
-B2_M11_002_L'organisation du travail : évolutions et défis
-B2_M11_003_L'organisation de la fonction RH
-B2_M11_004_Le partage de la fonction RH
-B2_M11_005_Les défis de la fonction RH
-B2_M11_006_La place des RH dans l'architecture organisationnelle
-B2_M11_007_L'architecture RH au service de la stratégie
-B2_M11_008_Le climat social d'une entreprise
-B2_M11_009_Le baromètre social
-B2_M11_010_L'audit : définition
-B2_M11_011_L'audit organisationnel
-B2_M11_012_L'audit social
-B2_M11_013_Les orientations RH après audit social
-B2_M11_014_Application : Diagnostiquer les pratiques RH au sein de l’organisation
-B2_M12__Connaître le droit du contrat de travail
-B2_M12_001_La formation du contrat de travail
-B2_M12_002_L’exécution du contrat de travail
-B2_M12_003_Le contrat de travail à durée indéterminée
-B2_M12_004_Le CDD et le contrat de travail temporaire
-B2_M12_005_Le contrat de travail à temps partiel
-B2_M12_006_Les contrats de formation
-B2_M12_007_L’évolution des conditions d’emploi
-B2_M13__Gérer la rupture du contrat de travail
-B2_M13_001_La gestion de la fin de CDD
-B2_M13_002_La gestion d'une démission
-B2_M13_003_La gestion d'un licenciement économique
-B2_M13_004_La gestion d'un départ à la retraite
-B2_M13_005_Les fins de contrats
-B2_M14__Établir les documents liés à la vie du contrat de travail
-B2_M14_001_La rédaction d'un CDI et d'un CDD
-B2_M14_002_Application : Etablir les documents administratifs
-B3_____Gestion des précontentieux et des contentieux
-B3_M01__Anticiper les risques de contentieux
-B3_M01_001_Onboarding - Anticiper les risques de contentieux
-B3_M01_002_Introduction à la cartographie des risques
-B3_M01_003_Identifier les risques juridiques
-B3_M01_004_Responsabilité contractuelle et lettres de mise en demeure
-B3_M01_005_Protocole transactionnel
-B3_M01_006_Modes Alternatifs de Règlement des Différends (MARD)
-B3_M01_007_Importance de l'archivage
-B3_M01_008_Auto-évaluation - Anticiper les risques de contentieux
-B3_M01_009_Application - Anticiper les risques de contentieux
-B3_M01_010_Offboarding - Anticiper les risques de contentieux
-B3_M02__Conseil stratégique en contentieux
-B3_M02_001_Onboarding - Conseil stratégique en contentieux
-B3_M02_002_Introduction au contentieux dans l’entreprise
-B3_M02_003_Analyse des risques et évaluation des preuves
-B3_M02_004_Conseil stratégique
-B3_M02_005_Stratégies contentieuses par domaine juridique
-B3_M02_006_Rédaction des écrits judiciaires
-B3_M02_007_Voies de recours
-B3_M02_008_Modalités et voies de recours
-B3_M02_009_Négociation et résolution alternative des conflits
-B3_M02_010_Stratégies de négociation avancées
-B3_M02_011_Auto-évaluation - Conseil stratégique en contentieux
-B3_M02_012_Application - Conseil stratégique en contentieux
-B3_M02_013_Offboarding - Conseil stratégique en contentieux
-B3_M03__Elaborer une stratégie de gestion de crise juridique
-B3_M04__Gestion des contentieux judiciaires
-B3_M04_001_Onboarding - Gestion des contentieux judiciaires
-B3_M04_002_Principes du procès civil en droit français
-B3_M04_003_Ordres de juridiction et compétences
-B3_M04_004_Règles de procédure civile et commerciale
-B3_M04_005_Règles de procédure prud’hommale
-B3_M04_006_Règles de procédure pénale
-B3_M04_007_Modes de preuve et exemples pratiques
-B3_M04_008_Exécution des décisions judiciaires
-B3_M04_009_Conclusion d'un accord transactionnel
-B3_M04_010_Évaluation des risques liés aux verdicts
-B3_M04_011_Stratégie contentieuse et rédaction de notes explicatives
-B3_M04_012_Auto-évaluation - Gestion des contentieux judiciaires
-B3_M04_013_Application - Gestion des contentieux judiciaires
-B3_M04_014_Offboarding - Gestion des contentieux judiciaires
-B3_M05__Piloter l’exécution des décisions judiciaires
-`;
+        function getCompletedLecons() {
+            if (!storageOK) return memoryCompleted;
+            try {
+                return JSON.parse(localStorage.getItem(completedLeconsKey) || '{}');
+            } catch(e){
+                return {};
+            }
+        }
+        function setCompletedLecons(obj){
+            if (!storageOK) { memoryCompleted = obj; return; }
+            try { localStorage.setItem(completedLeconsKey, JSON.stringify(obj)); } catch(e){}
+        }
+        function updateCompletedLecon(leconId, isCompleted){
+            const completed = getCompletedLecons();
+            if (isCompleted) completed[leconId] = true; else delete completed[leconId];
+            setCompletedLecons(completed);
+            // Mettre à jour UI sans re-render complet
+            updateCountsAndBars();
+            updateModuleCountersForLecon(leconId);
+        }
 
-/* ==============================
-   Constantes / état
-   ============================== */
-const STORAGE_KEY = 'mba_juriste_progress_v2'; // nouvelle clé pour la nouvelle liste
-const BLOCK_LABELS = {
-  'B0': "B0 : Fondamentaux du droit",
-  'B1': "B1 : Pilotage stratégique & RH",
-  'B2': "B2 : Accompagnement juridique & RH",
-  'B3': "B3 : (Pré)contentieux"
-};
+        /* ---------- PROGRESS CALC ---------- */
+        function calculateProgress() {
+            const completed = getCompletedLecons();
+            let totalCompleted = 0;
+            let totalLecons = 0;
+            const blocProgress = {};
 
-let courseStructure = [];
-let completionState = {};
-let totalLessons = 0;
+            Object.keys(programData).forEach(blocId => {
+                let blocCompleted = 0;
+                let blocTotal = 0;
 
-/* ==============================
-   Stockage
-   ============================== */
-function loadCompletionState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-function saveCompletionState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  catch {}
-}
+                programData[blocId].modules.forEach(module => {
+                    blocTotal += module.lecons.length;
+                    module.lecons.forEach(lecon => {
+                        if (completed[lecon.id]) blocCompleted++;
+                    });
+                });
 
-/* ==============================
-   Parsing (format underscore)
-   ============================== */
-function parseCourseData(data) {
-  const lines = data.split('\n')
-    .map(l => l.trim())
-    .filter(Boolean);
+                totalLecons += blocTotal;
+                totalCompleted += blocCompleted;
 
-  const structure = [];
-  let currentBlock = null;
-  let currentModule = null;
-  totalLessons = 0;
+                blocProgress[blocId] = {
+                    completed: blocCompleted,
+                    total: blocTotal,
+                    percentage: blocTotal > 0 ? Math.round((blocCompleted / blocTotal) * 100) : 0
+                };
+            });
 
-  for (const line of lines) {
-    // 1) Bloc : B0_____Titre
-    let m = line.match(/^((B\d+))_+(.+)$/);
-    // ATTENTION : ceci matche aussi des modules/leçons (qui commencent par Bx_), donc
-    // on ne valide bloc que si ce n'est PAS un module/leçon :
-    if (m && !/^B\d+_M\d{2}/.test(line)) {
-      const id = m[1];                 // B0
-      const title = m[3].trim();       // Titre du bloc
-      currentBlock = { id, title, type: 'block', modules: [] };
-      structure.push(currentBlock);
-      currentModule = null;
-      continue;
-    }
+            const overallPercentage = totalLecons > 0 ? Math.round((totalCompleted / totalLecons) * 100) : 0;
+            return { totalCompleted, totalLecons, overallPercentage, blocProgress };
+        }
 
-    // 2) Module : B0_M01___Titre
-    m = line.match(/^((B\d+_M\d{2}))_+(.+)$/);
-    if (m) {
-      if (!currentBlock) {
-        console.warn('Module trouvé sans bloc courant :', line);
-        continue;
-      }
-      const id = m[1];            // B0_M01
-      const title = m[3].trim();  // Titre du module
-      currentModule = { id, title, type: 'module', lessons: [] };
-      currentBlock.modules.push(currentModule);
-      continue;
-    }
+        /* ---------- RENDER: STATIC (once) ---------- */
+        document.addEventListener('DOMContentLoaded', function() {
+            renderExplorer();   // construit les onglets et accordéons une seule fois
+            attachListeners();  // lie les événements (délégation)
+            updateCountsAndBars(); // remplit les compteurs et barres de progression
+            showBloc('B0');     // affiche le premier bloc
+        });
 
-    // 3) Leçon : B0_M01_001_Titre
-    m = line.match(/^((B\d+_M\d{2}_\d{3}))_(.+)$/);
-    if (m && currentModule) {
-      const id = m[1];            // B0_M01_001
-      const title = m[3].trim();  // Titre de la leçon
-      currentModule.lessons.push({ id, title, type: 'lesson' });
-      totalLessons++;
-      continue;
-    }
-  }
-  return structure;
-}
+        function renderExplorer() {
+            const tabContainer = document.getElementById('tab-container');
+            const contentContainer = document.getElementById('content-container');
+            const completed = getCompletedLecons();
 
-/* ==============================
-   Rendu & interactions
-   ============================== */
-function updateProgress() {
-  const completed = Object.values(completionState).filter(Boolean).length;
-  const pct = totalLessons ? (completed / totalLessons) * 100 : 0;
-  const pctDisplay = pct > 0 && pct < 1 ? 1 : Math.round(pct);
+            let tabsHTML = '';
+            let contentHTML = '';
 
-  document.getElementById('progress-bar').style.width = `${pctDisplay}%`;
-  document.getElementById('progress-text').textContent =
-    `${completed}/${totalLessons} leçons complétées (${pctDisplay}%)`;
-}
+            Object.keys(programData).forEach((blocId) => {
+                const bloc = programData[blocId];
+                tabsHTML += `<button id="tab-${blocId}" class="tab-btn" data-target="content-${blocId}">
+                                ${blocId}: ${bloc.title.split(' ')[0]}
+                             </button>`;
 
-function handleCheckboxChange(event) {
-  const lessonId = event.target.dataset.lessonId;
-  const isChecked = event.target.checked;
-  completionState[lessonId] = isChecked;
-  updateProgress();
+                let modulesHTML = `<div id="content-${blocId}" class="bloc-content space-y-4" style="display:none">`;
+                modulesHTML += `<h4 class="text-xl font-semibold text-gray-700 mb-4">${bloc.title}</h4>`;
 
-  const container = event.target.closest('.lesson-container');
-  if (container) {
-    const titleSpan = container.querySelector('label span:last-child');
-    if (isChecked) {
-      container.classList.remove('bg-white', 'hover:bg-gray-50');
-      container.classList.add('bg-green-50', 'ring-2', 'ring-green-400');
-      if (titleSpan) titleSpan.classList.add('line-through', 'text-gray-600');
-    } else {
-      container.classList.remove('bg-green-50', 'ring-2', 'ring-green-400');
-      container.classList.add('bg-white', 'hover:bg-gray-50');
-      if (titleSpan) titleSpan.classList.remove('line-through', 'text-gray-600');
-    }
-  }
-  saveCompletionState(completionState);
-}
+                bloc.modules.forEach(module => {
+                    const moduleLeconCount = module.lecons.length;
+                    const moduleCompletedCount = module.lecons.filter(l => completed[l.id]).length;
+                    const modulePercentage = moduleLeconCount > 0 ? Math.round((moduleCompletedCount / moduleLeconCount) * 100) : 0;
 
-function createLessonElement(lesson) {
-  const isCompleted = completionState[lesson.id] === true;
-  const div = document.createElement('div');
-  div.className = `lesson-container flex items-start p-3 rounded-lg transition-all duration-300 shadow-sm ${isCompleted ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white hover:bg-gray-50'}`;
-  div.innerHTML = `
-    <input type="checkbox" id="${lesson.id}" data-lesson-id="${lesson.id}" ${isCompleted ? 'checked' : '' }
-           class="mt-1 w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 transition-colors duration-200 cursor-pointer">
-    <label for="${lesson.id}" class="ml-3 flex flex-col cursor-pointer">
-      <span class="font-mono text-sm text-gray-500">${lesson.id}</span>
-      <span class="text-gray-900 font-medium ${isCompleted ? 'line-through text-gray-600' : ''}">${lesson.title}</span>
-    </label>
-  `;
-  div.querySelector('input[type="checkbox"]').addEventListener('change', handleCheckboxChange);
-  return div;
-}
+                    modulesHTML += `<div class="border border-gray-200 rounded-lg overflow-hidden">`;
+                    modulesHTML += `<button class="module-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100" data-target="lecons-${module.id}">
+                                        <span class="text-left flex-1">
+                                            <strong class="text-[#6B8A7A]">${module.id.split('_')[1].replace('M', 'Module ')}</strong>: ${module.title}
+                                            <span id="module-count-${module.id}" class="text-sm text-gray-500 ml-2">(${moduleCompletedCount}/${moduleLeconCount})</span>
+                                        </span>
+                                        <span id="module-percent-${module.id}" class="text-sm font-bold mr-4" style="color: ${bloc.color};">${modulePercentage}%</span>
+                                        <span class="module-toggle-icon text-[#6B8A7A] text-2xl font-bold transform transition-transform duration-300">›</span>
+                                    </button>`;
 
-function createModuleElement(module) {
-  const wrap = document.createElement('div');
-  wrap.className = "bg-blue-100 p-4 rounded-xl shadow-md border-l-4 border-blue-500 mb-4";
-  const contentId = `content-${module.id}`;
+                    let leconsHTML = `<ul class="p-4 bg-white border-t border-gray-200 divide-y divide-gray-100">`;
+                    if (module.lecons.length > 0) {
+                        module.lecons.forEach(lecon => {
+                            const isChecked = completed[lecon.id] ? 'checked' : '';
+                            leconsHTML += `<li class="py-3 px-3 text-gray-600 flex items-start">
+                                            <input type="checkbox" id="lecon-${lecon.id}" data-lecon-id="${lecon.id}" class="lecon-checkbox h-5 w-5 text-[#6B8A7A] rounded border-gray-300 focus:ring-[#6B8A7A] mt-0.5" ${isChecked}>
+                                            <label for="lecon-${lecon.id}" class="flex-1 ml-3">
+                                                <span class="block text-xs text-gray-500">${lecon.id}</span>
+                                                <span class="block text-gray-800">${lecon.title}</span>
+                                            </label>
+                                         </li>`;
+                        });
+                    } else {
+                        leconsHTML += `<li class="py-2 px-3 text-gray-500 italic">Aucune leçon détaillée pour ce module.</li>`;
+                    }
+                    leconsHTML += `</ul>`;
 
-  wrap.innerHTML = `
-    <div class="flex items-center justify-between cursor-pointer"
-         onclick="document.getElementById('${contentId}').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')">
-      <h3 class="text-xl font-bold text-blue-800 flex items-center">
-        <span class="text-2xl mr-2">🔵</span>${module.title}
-      </h3>
-      <svg class="w-5 h-5 text-blue-700 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-      </svg>
-    </div>
-    <div id="${contentId}" class="space-y-2 pl-4 pt-3 mt-3 border-l-2 border-blue-300 hidden"></div>
-  `;
-  const container = wrap.querySelector(`#${contentId}`);
-  module.lessons.forEach(lesson => container.appendChild(createLessonElement(lesson)));
-  return wrap;
-}
+                    modulesHTML += `<div id="lecons-${module.id}" class="lecon-list">${leconsHTML}</div>`;
+                    modulesHTML += `</div>`;
+                });
 
-function createBlockElement(block) {
-  const wrap = document.createElement('div');
-  wrap.id = `block-${block.id}`;
-  wrap.className = "course-block space-y-4";
+                modulesHTML += `</div>`;
+                contentHTML += modulesHTML;
+            });
 
-  const label = BLOCK_LABELS[block.id] || `${block.id} : ${block.title}`;
+            tabContainer.innerHTML = tabsHTML;
+            contentContainer.innerHTML = contentHTML;
+        }
 
-  wrap.innerHTML = `
-    <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-800 mb-6 mt-4 flex items-center">
-      <span class="text-3xl mr-3">🟡</span>${label}
-    </h2>
-    <div class="space-y-4" id="modules-container-${block.id}"></div>
-  `;
-  const container = wrap.querySelector(`#modules-container-${block.id}`);
-  block.modules.forEach(m => container.appendChild(createModuleElement(m)));
-  return wrap;
-}
+        /* ---------- RENDER: DYNAMIC COUNTS ONLY ---------- */
+        function renderStats(progress) {
+            document.getElementById('bloc-count').textContent = programStats.blocCount;
+            document.getElementById('module-count').textContent = programStats.moduleCount;
+            document.getElementById('lecon-count').textContent = `${progress.totalCompleted} / ${programStats.leconCount}`;
+        }
 
-function switchTab(blockId) {
-  document.querySelectorAll('.tab-button').forEach(btn => {
-    if (btn.dataset.blockId === blockId) {
-      btn.classList.remove('text-gray-500','border-transparent','hover:border-gray-300');
-      btn.classList.add('text-blue-600','border-blue-600');
-    } else {
-      btn.classList.add('text-gray-500','border-transparent','hover:border-gray-300');
-      btn.classList.remove('text-blue-600','border-blue-600');
-    }
-  });
-  document.querySelectorAll('.course-block').forEach(block => {
-    block.style.display = (block.id === `block-${blockId}`) ? 'block' : 'none';
-  });
-}
+        function renderBlocProgress(progress) {
+            const container = document.getElementById('bloc-progress-container');
+            let html = '';
 
-function createTabButtons() {
-  const nav = document.getElementById('tab-navigation');
-  const firstId = courseStructure.length ? courseStructure[0].id : null;
+            Object.keys(progress.blocProgress).forEach(blocId => {
+                const data = progress.blocProgress[blocId];
+                const blocTitle = programData[blocId].title;
+                const color = programData[blocId].color;
 
-  courseStructure.forEach((block, idx) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.dataset.blockId = block.id;
-    btn.className = `tab-button px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${idx===0?'text-blue-600 border-blue-600':'text-gray-500 border-transparent hover:border-gray-300'}`;
-    btn.textContent = (BLOCK_LABELS[block.id] || block.title);
-    btn.onclick = () => switchTab(block.id);
-    nav.appendChild(btn);
-  });
-  if (firstId) switchTab(firstId);
-}
+                html += `<div class="p-4 border border-gray-100 rounded-lg bg-gray-50">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-semibold text-gray-700">${blocId}: ${blocTitle}</span>
+                                <span class="text-sm font-bold" style="color: ${color};">${data.percentage}%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${data.percentage}%; background-color: ${color};"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">${data.completed} leçons sur ${data.total} complétées</div>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        }
 
-/* ==============================
-   Scroll-to-top visibility
-   ============================== */
-function handleScroll() {
-  const btn = document.getElementById('scroll-to-top');
-  if (window.scrollY > 300) {
-    btn.classList.add('opacity-100','translate-y-0');
-    btn.classList.remove('opacity-0','translate-y-4');
-  } else {
-    btn.classList.remove('opacity-100','translate-y-0');
-    btn.classList.add('opacity-0','translate-y-4');
-  }
-}
+        function updateModuleCountersForLecon(changedLeconId){
+            // retrouve le module et le bloc concernés et met à jour leurs compteurs/percentages
+            const completed = getCompletedLecons();
 
-/* ==============================
-   Boot
-   ============================== */
-document.addEventListener('DOMContentLoaded', () => {
-  // 1) Parser la structure
-  courseStructure = parseCourseData(COURSE_DATA_RAW);
+            Object.keys(programData).forEach(blocId => {
+                programData[blocId].modules.forEach(module => {
+                    // seulement le module contenant la leçon modifiée
+                    const found = module.lecons.some(l => l.id === changedLeconId);
+                    if (found){
+                        const moduleLeconCount = module.lecons.length;
+                        const moduleCompletedCount = module.lecons.filter(l => completed[l.id]).length;
+                        const modulePercentage = moduleLeconCount > 0 ? Math.round((moduleCompletedCount / moduleLeconCount) * 100) : 0;
+                        const countNode = document.getElementById(`module-count-${module.id}`);
+                        const percentNode = document.getElementById(`module-percent-${module.id}`);
+                        if (countNode) countNode.textContent = `(${moduleCompletedCount}/${moduleLeconCount})`;
+                        if (percentNode) percentNode.textContent = `${modulePercentage}%`;
+                    }
+                });
+            });
+        }
 
-  // 2) Charger l'état depuis localStorage
-  completionState = loadCompletionState();
+        function updateCountsAndBars(){
+            const progress = calculateProgress();
+            renderStats(progress);
+            renderBlocProgress(progress);
+        }
 
-  // 3) Rendu
-  const list = document.getElementById('course-list');
-  document.getElementById('loading-indicator').style.display = 'none';
-  courseStructure.forEach(block => list.appendChild(createBlockElement(block)));
+        /* ---------- LISTENERS (delegation) ---------- */
+        function attachListeners() {
+            const tabContainer = document.getElementById('tab-container');
+            const contentContainer = document.getElementById('content-container');
 
-  // 4) Onglets
-  createTabButtons();
+            tabContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('.tab-btn');
+                if (button) {
+                    showBloc(button.id.replace('tab-', ''));
+                }
+            });
 
-  // 5) Progression
-  updateProgress();
+            contentContainer.addEventListener('click', (e) => {
+                const toggle = e.target.closest('.module-toggle');
+                if (toggle) {
+                    const targetId = toggle.dataset.target;
+                    const leconList = document.getElementById(targetId);
 
-  // 6) Scroll handler
-  window.addEventListener('scroll', handleScroll);
-  handleScroll();
+                    const isOpening = !leconList.classList.contains('open');
 
-  // 7) Afficher l'app
-  document.getElementById('app-container').style.opacity = 1;
-});
-</script>
+                    // Fermer les autres modules ouverts dans le même bloc
+                    const currentBlocContent = toggle.closest('.bloc-content');
+                    if (currentBlocContent) {
+                        currentBlocContent.querySelectorAll('.module-toggle.open').forEach(openToggle => {
+                            const openList = document.getElementById(openToggle.dataset.target);
+                            if (openToggle !== toggle) {
+                                openToggle.classList.remove('open');
+                                openList.classList.remove('open');
+                            }
+                        });
+                    }
+
+                    toggle.classList.toggle('open', isOpening);
+                    leconList.classList.toggle('open', isOpening);
+                }
+
+                const checkbox = e.target.closest('.lecon-checkbox');
+                if (checkbox) {
+                    const leconId = checkbox.dataset.leconId;
+                    updateCompletedLecon(leconId, checkbox.checked);
+                }
+            });
+        }
+
+        /* ---------- TABS ---------- */
+        function showBloc(blocId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const tabButton = document.getElementById(`tab-${blocId}`);
+            if (tabButton) tabButton.classList.add('active');
+
+            document.querySelectorAll('.bloc-content').forEach(content => content.style.display = 'none');
+            const contentBlock = document.getElementById(`content-${blocId}`);
+            if (contentBlock) contentBlock.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
