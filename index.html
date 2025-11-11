@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBA Juriste d'entreprise en Droit Social - Suivi</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuration de la police Inter -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        /* Style pour masquer temporairement le contenu avant le chargement */
+        #app-container {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .text-shadow-custom {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        /* Style pour le bouton scroll-to-top */
+        #scroll-to-top {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+    </style>
+    <!-- Importations Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+        // Définition des variables globales (fournies par l'environnement Canvas)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Initialisation de Firebase
+        let app, db, auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        // Activer les logs de débogage pour Firestore
+        setLogLevel('debug');
+
+        if (firebaseConfig) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            window.doc = doc;
+            window.getDoc = getDoc;
+            window.setDoc = setDoc;
+            window.db = db;
+            window.appId = appId;
+
+        } else {
+            console.error("Configuration Firebase non disponible.");
+        }
+
+        async function authenticateAndSetup() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    // Tente de se connecter anonymement si le token n'est pas fourni ou est invalide
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                // En cas d'erreur (même après l'échec de la connexion anonyme),
+                // onAuthStateChanged prendra le relais avec un utilisateur null.
+                console.error("Erreur critique d'authentification Firebase:", error);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Authentification réussie (token ou anonyme)
+                userId = user.uid;
+                window.userId = userId;
+                console.log("Authentification Firebase réussie. Sauvegarde activée.");
+            } else {
+                // Si aucune authentification n'est résolue, ne pas définir d'UID pour Firestore.
+                userId = null; 
+                window.userId = null;
+                console.warn("Authentification Firebase non résolue. Sauvegarde désactivée.");
+            }
+            isAuthReady = true;
+
+            // Démarrer l'application principale (cette fonction est appelée une fois l'état d'auth connu)
+            if (window.initApp) {
+                window.initApp();
+            }
+        });
+
+        if (auth) {
+            authenticateAndSetup();
+        } else {
+            // Si auth n'a pas pu être initialisé (ex: config manquante), on démarre l'app sans persistance.
+            if (window.initApp) {
+                window.initApp();
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div id="app-container" class="min-h-screen p-4 sm:p-8 pt-4 pb-20 transition-opacity duration-500">
+    <header class="mb-6 sticky top-0 bg-white shadow-lg rounded-xl z-20 p-4 border-b-4 border-amber-500">
+        <a href="https://www.studi.com/fr/formation/juridique/mba-juriste-dentreprise-en-droit-social" target="_blank" class="block">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-900 text-shadow-custom hover:text-amber-700 transition-colors">
+                MBA Juriste d'entreprise en Droit Social
+            </h1>
+        </a>
+        <p class="text-lg sm:text-xl font-semibold text-amber-600 mb-4">
+            Suivi du Programme de la formation
+        </p>
+
+        <!-- Barre de Progression -->
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+            <div id="progress-bar" class="bg-amber-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+        </div>
+        <div class="text-right text-sm font-medium text-blue-800">
+            <span id="progress-text">0/0 leçons complétées (0%)</span>
+        </div>
+        
+        <!-- Navigation par Onglets des Blocs -->
+        <div id="tab-navigation" class="mt-4 flex flex-wrap border-b border-gray-200">
+            <!-- Les boutons d'onglets seront insérés ici par JS -->
+        </div>
+    </header>
+
+    <!-- Conteneur pour la liste des cours -->
+    <div id="course-list" class="space-y-6">
+        <div class="text-center p-8 text-lg text-gray-500" id="loading-indicator">Chargement des données de progression... ⏳</div>
+        <!-- Les blocs de cours seront insérés ici -->
+    </div>
+</div>
+
+<!-- Bouton Remonter en Haut -->
+<button id="scroll-to-top" 
+        class="fixed bottom-4 right-4 bg-blue-700 hover:bg-blue-800 text-white p-3 rounded-full shadow-lg z-30 opacity-0 transform translate-y-4"
+        onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+    </svg>
+</button>
+
+<script>
+    // --- Définition de la Structure du Cours (mise à jour) ---
+    const COURSE_TITLE = "MBA Juriste d'entreprise en Droit Social";
+
+    // Structure unique et nettoyée
+    const COURSE_DATA_RAW = `
+        🟡 B0 : FONDAMENTAUX JURIDIQUES DE L'ENTREPRISE
+        🔵 B0_M1 : Mise à niveau en droit - Les contrats de l’entreprise
+        B0_M1-001 : Le contrat de vente du fonds de commerce
+        B0_M1-002 : Le contrat de location-gérance du fonds de commerce
+        B0_M1-003 : Le contrat de vente
+        B0_M1-004 : Les contrats de consommation
+        B0_M1-005 : Le compte de dépôt bancaire
+        B0_M1-006 : Les contrats de crédit aux entreprises
+        B0_M1-007 : Les sûretés
+        B0_M1-008 : Application : Maîtriser les contrats de l'entreprise
+        🔵 B0_M2 : Mise à niveau en droit - L’entreprise et ses responsabilités
+        B0_M2-001 : Les responsabilités civile et pénale
+        B0_M2-002 : La responsabilité pénale
+        B0_M2-003 : La procédure pénale
+        B0_M2-004 : La responsabilité civile extracontractuelle
+        B0_M2-005 : Les responsabilités du fait des produits défectueux et du préjudice environnemental
+        B0_M2-006 : Application : L'entreprise et ses responsabilités
+        🔵 B0_M3 : Mise à niveau en droit - L’organisation judiciaire
+        B0_M3-001 : L'organisation judiciaire européenne
+        B0_M3-002 : L'organisation judiciaire nationale
+        B0_M3-003 : L'action en justice
+        B0_M3-004 : Les MARD
+        B0_M3-005 : Application : Comprendre l'organisation judiciaire
+        🔵 B0_M4 : Mise à niveau en droit des sociétés
+        B0_M4-001 : Les notions d'entreprise et de société
+        B0_M4-002 : Les éléments constitutifs du contrat de société
+        B0_M4-003 : Le contrat de société
+        B0_M4-004 : La constitution de la société
+        B0_M4-005 : La société en formation
+        B0_M4-006 : Les attributs de la personnalité morale
+        B0_M4-007 : Les notions d'intérêt social et d'abus de droit
+        B0_M4-008 : Les organes de gestion
+        B0_M4-009 : Les associés
+        B0_M4-010 : Le contrôle de la société
+        B0_M4-011 : Le statut du commissaire aux comptes
+        B0_M4-012 : La dissolution et la liquidation des sociétés
+        B0_M4-013 : La transformation des sociétés
+        B0_M4-014 : Les sociétés sans personnalité juridique
+        B0_M4-015 : Application : Comprendre la nature et le fonctionnement d'une entreprise en société
+        B0_M4-016 : Les formes juridiques des sociétés
+        B0_M4-017 : Rédaction et gestion des documents juridiques
+        B0_M4-018 : Focus sur les statuts juridiques - SARL
+        B0_M4-019 : Focus sur les statuts juridiques - SA
+        B0_M4-020 : Focus sur les statuts juridiques - SAS
+        🔵 B0_M5 : Mise à niveau en droit - Propriété intellectuelle et industrielle
+        B0_M5-001 : La théorie du patrimoine
+        B0_M5-002 : La propriété
+        B0_M5-003 : Le fonds de commerce et le contrat de bail commercial
+        B0_M5-004 : La propriété industrielle : brevet, marque, dessins et modèles
+        B0_M5-005 : La propriété littéraire et artistique : le droit d'auteur
+        B0_M5-006 : Le droit de l'informatique et de la propriété industrielle
+        B0_M5-007 : La protection juridique des sites internet et des créations numériques
+        B0_M5-008 : Les règles juridiques d'utilisation d'internet
+        B0_M5-009 : Application : Caractériser les biens
+        🔵 B0_M6 : Mise à niveau en droit fiscal
+        B0_M6-001 : Les caractéristiques et les sources du droit fiscal
+        B0_M6-002 : La classification des impôts et taxes
+        B0_M6-003 : Organisation et rôle de l'administration fiscale et veille fiscale
+        B0_M6-004 : Application : Introduire le droit fiscal
+        🔵 B0_M7 : Mise à niveau en droit - Théorie générale du contrat
+        B0_M7-001 : La théorie générale du contrat
+        B0_M7-002 : La validité du contrat
+        B0_M7-003 : Les clauses contractuelles particulières
+        B0_M7-004 : L'exécution du contrat
+        B0_M7-005 : L'inexécution du contrat
+        B0_M7-006 : Application : Maîtriser la théorie générale du contrat
+        🔵 B0_M8 : Mise à niveau en droit de la concurrence
+        B0_M8-001 : Le contrôle des concentrations
+        B0_M8-002 : Les pratiques anticoncurrentielles
+        B0_M8-003 : L'entreprise et la concurrence déloyale
+        B0_M8-004 : La transparence et les pratiques restrictives de concurrence
+        B0_M8-005 : Application : Maîtriser les situations contraires au droit de la concurrence
+        🔵 B0_M9 : Mise à niveau en droit des procédures collectives
+        B0_M9-001 : L'évolution du droit de l'entreprise en difficulté
+        B0_M9-002 : La prévention des difficultés de l'entreprise
+        B0_M9-003 : Le traitement amiable des difficultés par la procédure de conciliation
+        B0_M9-004 : Le traitement judiciaire par les procédures collectives
+        B0_M9-005 : La procédure de sauvegarde
+        B0_M9-006 : Le sort des créanciers en période d'observation
+        B0_M9-007 : Le plan de sauvegarde ordinaire et la sauvegarde accélérée
+        B0_M9-008 : La procédure de redressement judiciaire
+        B0_M9-009 : La procédure de liquidation judiciaire
+        B0_M9-010 : Application : Pérenniser l'entreprise en difficulté
+        🔵 B0_M10 : Mise à niveau en droit de l’intelligence artificielle
+        B0_M10-001 : Un droit de l'IA dans les pratiques de l'entreprise
+        🟡 B1 : DROIT SOCIAL DU CONTRAT DE TRAVAIL
+        🔵 B1_M1 : Mise à niveau en droit social (Contrat de travail & Rupture)
+        B1_M1-001 : La notion de droit du travail
+        B1_M1-002 : La formation du contrat de travail
+        B1_M1-003 : Maîtriser la rédaction d’un contrat de travail
+        B1_M1-004 : L’exécution du contrat de travail
+        B1_M1-005 : Le contrat de travail à durée indéterminée
+        B1_M1-006 : Le CDD et le contrat de travail temporaire
+        B1_M1-007 : Le contrat de travail à temps partiel
+        B1_M1-008 : Les contrats de formation
+        B1_M1-009 : La rédaction du contrat de travail
+        B1_M1-010 : Application : Etablir les contrats de travail
+        B1_M1-011 : Comment et pourquoi se former à gestion des parcours salariés
+        B1_M1-012 : Le recrutement
+        B1_M1-013 : Les formalités administratives d'embauche
+        B1_M1-014 : La suspension du contrat de travail
+        B1_M1-015 : L'édition des documents de suspension du contrat
+        B1_M1-016 : La rupture du contrat de travail : introduction
+        B1_M1-017 : Le licenciement
+        B1_M1-018 : Les autres modes de rupture du contrat de travail
+        B1_M1-019 : Les fins de contrat : indemnité de précarité, ICP, Indemnité RTT, et autres indemnités
+        B1_M1-020 : Les fins de contrat : rupture conventionnelle, départ et mise à la retraite
+        B1_M1-021 : Les formalités de rupture du contrat de travail
+        B1_M1-022 : L'édition des documents de fin de contrat
+        B1_M1-023 : Synthèse et application : Traiter les entrées et sorties des salariés
+        🟡 B2 : PILOTAGE STRATÉGIQUE, VEILLE, ET ACCOMPAGNEMENT RH & OPÉRATIONS INTERNES
+        🔵 B2_M1 : Optimiser et présenter la veille
+        B2_M1-001 : Délimiter et structurer une veille pour une entreprise
+        B2_M1-002 : Développer un réseau d’experts pour une veille partagée
+        🔵 B2_M2 : Réaliser une veille juridique et sociale
+        B2_M2-001 : Les différents types de veille
+        B2_M2-002 : Introduction : la notion de veille juridique
+        B2_M2-003 : Comment faire de la veille juridique
+        B2_M2-004 : Les principaux sites d'actualité juridique
+        B2_M2-005 : Les différents flux juridiques officiels
+        B2_M2-006 : La réalisation de veille juridique
+        B2_M2-007 : Les outils pour une veille juridique efficace
+        B2_M2-008 : Le pilotage de veille juridique
+        B2_M2-009 : Les grandes tendances juridiques en France et leurs effets sur l’organisation
+        🔵 B2_M3 : La veille juridique en pratique
+        B2_M3-001 : Prise de connaissance et méthodologie d'utilisation des sites institutionnels
+        B2_M3-002 : Réaliser une note interne à partir d'une veille juridique en droit des données personnelles
+        B2_M3-003 : Réaliser une note interne à partir d'une veille juridique en matière de TVA
+        B2_M3-004 : Réaliser une note interne à partir d'une veille juridique en droit des contrats
+        🔵 B2_M4 : Procéder de la veille juridique à la recommandation stratégique
+        B2_M4-001 : Onboarding - Procéder de la veille juridique à la recommandation stratégique
+        B2_M4-002 : Utilisation de Village Justice et experts LinkedIn
+        B2_M4-003 : Présentation des bases de données juridiques et outils de veille
+        B2_M4-004 : Méthodologie de recherche et d'organisation de la veille
+        B2_M4-005 : Techniques de communication écrite
+        B2_M4-006 : Introduction aux bases de données juridiques
+        B2_M4-007 : Analyse des évolutions législatives
+        B2_M4-008 : Application - Recherche et présentation d'informations
+        B2_M4-009 : Reporting extra-financier et directives
+        B2_M4-010 : Mise en situation pratique de la veille juridique
+        B2_M4-011 : Impact des évolutions législatives internationales
+        B2_M4-012 : Outils numériques avancés pour la veille juridique
+        B2_M4-013 : Auto-Evaluation - Procéder de la veille juridique à la recommandation stratégique
+        B2_M4-014 : Application - Procéder de la veille juridique à la recommandation stratégique
+        B2_M4-015 : Offboarding - Procéder de la veille juridique à la recommandation stratégique
+        🔵 B2_M5 : Définir la stratégie juridique de l’entreprise
+        B2_M5-001 : Intégrer des LegalTech et de l’IA dans la stratégie juridique
+        B2_M5-002 : Maîtriser la méthodologie complète de l’audit juridique
+        B2_M5-003 : Elaborer un plan d’action correctives et préventives
+        B2_M5-004 : Digitaliser et automatiser les processus juridiques
+        🔵 B2_M6 : Concevoir, déployer et archiver la conformité
+        B2_M6-001 : Concevoir et rédiger des politiques de conformité
+        B2_M6-002 : Déployer et piloter les dispositifs de conformité
+        B2_M6-003 : Optimiser et sécuriser l'archivage
+        B2_M6-004 : Introduction au RGPD et archivage numérique
+        B2_M6-005 : Les règles d’archivage temporaire et l’anonymisation
+        B2_M6-006 : Minimisation des données et droit d’accès
+        B2_M6-007 : Sécurisation des accès et des données archivées
+        B2_M6-008 : Conséquences des violations de données
+        B2_M6-009 : Durées de conservation légale des documents
+        B2_M6-010 : Exemples de solutions techniques disponibles
+        B2_M6-011 : Élaboration d’une procédure d’archivage numérique
+        B2_M6-012 : Présentation des procédures d’archivage par secteur d’activité
+        B2_M6-013 : Auto-Evaluation - Optimiser et sécuriser l’archivage
+        B2_M6-014 : Application - Optimiser et sécuriser l’archivage
+        B2_M6-015 : Offboarding - Optimiser et sécuriser l’archivage
+        🔵 B2_M7 : Piloter une équipe RH
+        B2_M7-001 : Une fonction RH alignée avec les attentes et besoins de ses clients ?
+        B2_M7-002 : DRH et défis digitaux
+        B2_M7-003 : La mesure de la performance de la fonction RH
+        B2_M7-004 : Décliner la stratégie en action
+        B2_M7-005 : Des compétences repérées à l'équipe opérationnelle
+        B2_M7-006 : L'identification des compétences
+        B2_M7-007 : Évaluer le niveau de compétences
+        B2_M7-008 : Débriefer toute acquisition de compétence
+        B2_M7-009 : Acter la compétence acquise
+        B2_M7-010 : Talent Review
+        B2_M7-011 : Capitaliser sur l’expérience, tracer une roadmap
+        B2_M7-012 : Application : Piloter une équipe RH
+        🔵 B2_M8 : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
+        B2_M8-001 : Les théories de l'organisation au service du management
+        B2_M8-002 : Le management et le manager
+        B2_M8-003 : Le management des individus et des groupes
+        B2_M8-004 : Le management à distance
+        B2_M8-005 : Les plateformes de travail collaboratives
+        B2_M8-006 : Fixer des objectifs SMART
+        B2_M8-007 : L'utilité du suivi de la performance
+        B2_M8-008 : Les indicateurs de suivi selon les objectifs
+        B2_M8-009 : La fixation des objectifs de l'équipe
+        B2_M8-010 : Le suivi des objectifs de l'équipe
+        B2_M8-011 : Faire faire sans se substituer
+        B2_M8-012 : Intégrer la vision (cadre de référence) de l’autre
+        B2_M8-013 : Obtenir régulièrement
+        B2_M8-014 : Application : Accompagner les collaborateurs dans la définition et la réalisation de leurs objectifs
+        🔵 B2_M9 : Construire une politique de compensations and benefits
+        B2_M9-001 : La politique de rémunération
+        B2_M9-002 : La politique de rémunération et les politiques RH
+        B2_M9-003 : La politique de rémunération : élaborer et piloter
+        B2_M9-004 : La mise en oeuvre de sa politique salariale
+        B2_M9-005 : L'optimisation de sa politique salariale
+        B2_M9-006 : L'évaluation d'impact de la politique de rémunération
+        B2_M9-007 : Le Comp & Ben Manager
+        B2_M9-008 : Le benchmark de rémunération
+        B2_M9-009 : Les outils de benchmark pour s’assurer de la meilleure compétitivité en matière de rémunération
+        B2_M9-010 : Les primes et avantages alliés pour convaincre
+        B2_M9-011 : L’entretien de décision salariale
+        B2_M9-012 : Présentation de la rémunération brute et le décompte du temps de travail
+        B2_M9-013 : La rémunération brute : le salaire de base, les primes et la retenue pour absence
+        B2_M9-014 : La rémunération brute : le salaire de base, les primes et la retenue pour absence (Type: Leçons)
+        B2_M9-015 : Cas pratique - Salaire de base (Type: Exercices)
+        B2_M9-016 : Cas pratique - Primes et indemnités (Type: Exercices)
+        B2_M9-017 : La rémunération brute : les avantages en nature
+        B2_M9-018 : Les salaires net, imposable et à payer
+        B2_M9-019 : L’association des salariés aux performances de l’entreprise, généralités
+        B2_M9-020 : La protection sociale, généralités
+        B2_M9-021 : La protection sociale, généralités (Type: Leçons)
+        B2_M9-022 : Applications | Généralités (Type: Exercices)
+        B2_M9-023 : L’assurance maladie du régime général
+        B2_M9-024 : L’assurance maladie du régime général (Type: Leçons)
+        B2_M9-025 : Cas Analyse d'une documentation juridique (Type: Exercices)
+        B2_M9-026 : Cas Anthony | La branche assurance maladie du régime général (Type: Exercices)
+        B2_M9-027 : Cas Marie Line | La branche assurance maladie du régime général (Type: Exercices)
+        B2_M9-028 : Application : Construire une politique de compensations and benefits
+        🔵 B2_M10 : Comprendre et analyser des situations en droit de la sécurité sociale
+        B2_M10-001 : Onboarding vidéo : Comprendre et analyser des situations en droit de la sécurité sociale
+        B2_M10-002 : Introduction au droit de la sécurité sociale
+        B2_M10-003 : Le droit européen de la sécurité sociale
+        B2_M10-004 : Les régimes de la sécurité sociale
+        B2_M10-005 : Les régimes complémentaires de sécurité sociale
+        B2_M10-006 : Le contentieux en droit de la sécurité sociale
+        B2_M10-007 : La veille juridique et actualité
+        B2_M10-008 : Offboarding vidéo : Synthèse - Comprendre et analyser des situations en droit de la sécurité sociale
+        B2_M10-009 : Application : Comprendre et analyser des situations en droit de la sécurité sociale
+        B2_M10-010 : Auto-évaluation : Comprendre et analyser des situations en droit de la sécurité sociale
+        🔵 B2_M11 : Piloter le changement structurel d’une entreprise (RSE & Digital)
+        B2_M11-001 : Les préalables à une stratégie RSE
+        B2_M11-002 : Le cadre législatif et réglementaire
+        B2_M11-003 : Quelques obligations réglementaires relatives à la RSE en France
+        B2_M11-004 : Des actions volontaristes possibles relatives à la RSE
+        B2_M11-005 : La carte de transformation
+        B2_M11-006 : La communication en externe et en interne sur la RSE
+        B2_M11-007 : L'entrepreneuriat responsable et durable
+        B2_M11-008 : Les enjeux de la transformation digitale
+        B2_M11-009 : Les deux chantiers préliminaires à la TD
+        B2_M11-010 : Application : Piloter le changement structurel d'une entreprise
+        🔵 B2_M12 : Participer au déploiement d’un projet de transformation au sein de l’organisation
+        B2_M12-001 : Les projets de transformation
+        B2_M12-002 : Le diagnostic de la transformation
+        B2_M12-003 : Les évaluations des impacts
+        B2_M12-004 : Les interactions et les humains
+        B2_M12-005 : Le DRH project manager
+        B2_M12-006 : Les modes de gestion de projet dits "classiques"
+        B2_M12-007 : Les méthodologies agiles
+        B2_M12-008 : Les processus et les disciplines de la gestion de projet selon le PMBOK
+        B2_M12-009 : Le pilotage du projet
+        B2_M12-010 : Les acteurs et les ressources du projet
+        B2_M12-011 : La première découpe du projet
+        B2_M12-012 : La construction du planning
+        B2_M12-013 : Le rétroplanning
+        B2_M12-014 : La gestion du budget du projet
+        B2_M12-015 : Application : Faire face aux évolutions RH
+        🔵 B2_M13 : Piloter les impacts en matière de droit de la responsabilité
+        B2_M13-001 : Onboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
+        B2_M13-002 : Les bases du droit de la responsabilité
+        B2_M13-003 : La responsabilité des dirigeants et des administrateurs
+        B2_M13-004 : La responsabilité des professionnel
+        B2_M13-005 : La responsabilité environnementale
+        B2_M13-006 : La responsabilité en matière de données personnelles
+        B2_M13-007 : La responsabilité pénale des entreprises
+        B2_M13-008 : Offboarding vidéo : Piloter les impacts en matière de droit de la responsabilité
+        B2_M13-009 : Application : Piloter les impacts en matière de droit de la responsabilité
+        B2_M13-010 : Auto-évaluation : Piloter les impacts en matière de droit de la responsabilité
+        🔵 B2_M14 : Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+        B2_M14-001 : Onboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+        B2_M14-002 : Introduction au conseil juridique
+        B2_M14-003 : Introduction à la conformité réglementaire
+        B2_M14-004 : Identification des problématiques juridiques
+        B2_M14-005 : Recherche juridique et documentation
+        B2_M14-006 : Analyse des risques juridiques
+        B2_M14-007 : Communication et présentation orale des recommandations
+        B2_M14-008 : Gestion des litiges contractuels
+        B2_M14-009 : Veille juridique et mise à jour des connaissances
+        B2_M14-010 : Auto-Evaluation - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+        B2_M14-011 : Application - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+        B2_M14-012 : Offboarding - Réaliser le conseil juridique et opérationnel aux collaborateurs et à la direction
+        🔵 B2_M15 : Gérer le budget de son service
+        B2_M15-001 : Onboarding - Gérer le budget de son service
+        B2_M15-002 : Budget prévisionnel : présentation et méthode
+        B2_M15-003 : Outils de suivi et de pilotage : tableaux, indicateurs
+        B2_M15-004 : Adapter les postes de dépense
+        B2_M15-005 : Gérer le budget alloué à un service de l'entreprise
+        B2_M15-006 : Suivi budgétaire et analyse
+        B2_M15-007 : Gestion des imprévus budgétaires
+        B2_M15-008 : Évaluation des performances budgétaires
+        B2_M15-009 : Communication dans la gestion budgétaire
+        B2_M15-010 : Étude de cas : Gestion budgétaire d'un service
+        B2_M15-011 : Auto-évaluation - Gérer le budget de son service
+        B2_M15-012 : Application - Gérer le budget de son service
+        B2_M15-013 : Offboarding : Synthèse de la gestion budgétaire
+        🔵 B2_M16 : Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+        B2_M16-001 : Onboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+        B2_M16-002 : Principes de base des contrats commerciaux
+        B2_M16-003 : Les formes juridiques des sociétés
+        B2_M16-004 : Rédaction et gestion des documents juridiques
+        B2_M16-005 : Focus sur les statuts juridiques - SARL
+        B2_M16-006 : Focus sur les statuts juridiques - SA
+        B2_M16-007 : Focus sur les statuts juridiques - SAS
+        B2_M16-008 : Impact des contrats commerciaux sur la gestion RH
+        B2_M16-009 : Participation aux assemblées générales et décisions collectives
+        B2_M16-010 : Offboarding - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+        B2_M16-011 : Auto-évaluation - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+        B2_M16-012 : Application - Comprendre et maîtriser le droit des contrats commerciaux et des sociétés
+        B2_M16-013 : Live 1 : Focus théorique sur le droit des contrats commerciaux
+        B2_M16-014 : Live 2 : Focus pratique sur les formes juridiques des sociétés
+        🔵 B2_M17 : Rédiger un document juridique et intégrer les LegalTech
+        B2_M17-001 : Les éléments d'un document juridique
+        B2_M17-002 : Les bonnes pratiques de la rédaction de documents juridiques
+        B2_M17-003 : La rédaction des documents pour un avocat
+        B2_M17-004 : La rédaction des documents pour un huissier
+        B2_M17-005 : La rédaction des documents pour un magistrat
+        B2_M17-006 : La rédaction des documents pour un notaire
+        B2_M17-007 : Intégrer les technologies juridiques dans la gestion contractuelle
+        🔵 B2_M18 : Manager une équipe d’un service juridique et transverse
+        B2_M18-001 : Onboarding - Manager une équipe d'un service juridique et transverse
+        B2_M18-002 : Identifier les compétences de l'équipe
+        B2_M18-003 : Fixer des objectifs pertinents
+        B2_M18-004 : Méthodes et outils de suivi des activités
+        B2_M18-005 : Application des méthodes de suivi
+        B2_M18-006 : Résolution de problèmes et gestion des conflits
+        B2_M18-007 : Gestion du temps et des priorités
+        B2_M18-008 : Gestion de projet au sein d'une équipe juridique
+        B2_M18-009 : Auto-Evaluation - Manager une équipe d'un service juridique et transverse
+        B2_M18-010 : Application - Manager une équipe d'un service juridique et transverse
+        B2_M18-011 : Offboarding - Manager une équipe d'un service juridique et transverse
+        🔵 B2_M19 : Diagnostiquer les pratiques RH au sein de l’organisation
+        B2_M19-001 : L'histoire et l'évolution de la fonction RH
+        B2_M19-002 : L'organisation du travail : évolutions et défis
+        B2_M19-003 : L'organisation de la fonction RH
+        B2_M19-004 : Le partage de la fonction RH
+        B2_M19-005 : Les défis de la fonction RH
+        B2_M19-006 : La place des RH dans l'architecture organisationnelle
+        B2_M19-007 : L'architecture RH au service de la stratégie
+        B2_M19-008 : Le climat social d'une entreprise
+        B2_M19-009 : Le baromètre social
+        B2_M19-010 : L'audit : définition
+        B2_M19-011 : L'audit organisationnel
+        B2_M19-012 : L'audit social
+        B2_M19-013 : Les orientations RH après audit social
+        B2_M19-014 : Application : Diagnostiquer les pratiques RH au sein de l’organisation
+        🔵 B2_M20 : Ingénierie Pédagogique et Scénarisation de la formation
+        B2_M20-001 : Utiliser les concepts de base de l’ingénierie pédagogique
+        B2_M20-002 : Les méthodes pédagogiques
+        B2_M20-003 : Les concept, modalités et démarches pédagogiques
+        B2_M20-004 : Les objectifs pédagogiques
+        B2_M20-005 : Les environnements et services numériques mobilisables
+        B2_M20-006 : Les principales obligations des organismes de formation sur le handicap
+        B2_M20-007 : Les étapes clés structurant un temps de formation
+        B2_M20-008 : La construction du scénario pédagogique
+        B2_M20-009 : Les actions de sensibilisation
+        B2_M20-010 : Application sur la formation aux problématiques et risques juridiques
+        🔵 B2_M21 : Piloter une politique d’inclusion dans une entreprise
+        B2_M21-001 : La politique d'inclusion en entreprise
+        B2_M21-002 : Les enjeux de la diversité en entreprise
+        B2_M21-003 : La lutte contre les discriminations
+        B2_M21-004 : L'égalité Femmes / Hommes
+        B2_M21-005 : La déconstruction des stéréotypes
+        B2_M21-006 : La prévention du harcèlement
+        B2_M21-007 : Les libertés individuelles dans l'entreprise
+        B2_M21-008 : Le référent handicap en entreprise
+        B2_M21-009 : La qualité de vie et des conditions de travail
+        B2_M21-010 : Le bonheur au travail
+        B2_M21-011 : Le management interculturel
+        B2_M21-012 : Le management intergénérationnel
+        B2_M21-013 : Application : Piloter une politique d'inclusion dans une entreprise
+        🟡 B3 : GESTION DES CONTENTIEUX ET PRÉCONTENTIEUX
+        🔵 B3_M1 : Connaître le droit du contrat de travail & Gérer la rupture (Rappel et approfondissement)
+        B3_M1-001 : La formation du contrat de travail
+        B3_M1-002 : L’exécution du contrat de travail
+        B3_M1-003 : Le contrat de travail à durée indéterminée
+        B3_M1-004 : Le CDD et le contrat de travail temporaire
+        B3_M1-005 : Le contrat de travail à temps partiel
+        B3_M1-006 : Les contrats de formation
+        B3_M1-007 : L’évolution des conditions d’emploi
+        B3_M1-008 : La gestion de la fin de CDD
+        B3_M1-009 : La gestion d'une démission
+        B3_M1-010 : La gestion d'un licenciement économique
+        B3_M1-011 : La gestion d'un départ à la retraite
+        B3_M1-012 : Les fins de contrats
+        B3_M1-013 : Établir les documents liés à la vie du contrat de travail
+        B3_M1-014 : La rédaction d'un CDI et d'un CDD
+        B3_M1-015 : Application : Etablir les documents administratifs
+        🔵 B3_M2 : Anticiper les risques de contentieux
+        B3_M2-001 : Onboarding - Anticiper les risques de contentieux
+        B3_M2-002 : Introduction à la cartographie des risques
+        B3_M2-003 : Identifier les risques juridiques
+        B3_M2-004 : Responsabilité contractuelle et lettres de mise en demeure
+        B3_M2-005 : Protocole transactionnel
+        B3_M2-006 : Modes Alternatifs de Règlement des Différends (MARD)
+        B3_M2-007 : Importance de l'archivage
+        B3_M2-008 : Auto-évaluation - Anticiper les risques de contentieux
+        B3_M2-009 : Application - Anticiper les risques de contentieux
+        B3_M2-010 : Offboarding - Anticiper les risques de contentieux
+        🔵 B3_M3 : Conseil stratégique en contentieux
+        B3_M3-001 : Onboarding - Conseil stratégique en contentieux
+        B3_M3-002 : Introduction au contentieux dans l’entreprise
+        B3_M3-003 : Analyse des risques et évaluation des preuves
+        B3_M3-004 : Conseil stratégique
+        B3_M3-005 : Stratégies contentieuses par domaine juridique
+        B3_M3-006 : Rédaction des écrits judiciaires
+        B3_M3-007 : Voies de recours
+        B3_M3-008 : Modalités et voies de recours
+        B3_M3-009 : Négociation et résolution alternative des conflits
+        B3_M3-010 : Stratégies de négociation avancées
+        B3_M3-011 : Auto-évaluation - Conseil stratégique en contentieux
+        B3_M3-012 : Application - Conseil stratégique en contentieux
+        B3_M3-013 : Offboarding - Conseil stratégique en contentieux
+        B3_M3-014 : Elaborer une stratégie de gestion de crise juridique
+        🔵 B3_M4 : Gestion des contentieux judiciaires
+        B3_M4-001 : Onboarding - Gestion des contentieux judiciaires
+        B3_M4-002 : Principes du procès civil en droit français
+        B3_M4-003 : Ordres de juridiction et compétences
+        B3_M4-004 : Règles de procédure civile et commerciale
+        B3_M4-005 : Règles de procédure prud’hommale
+        B3_M4-006 : Règles de procédure pénale
+        B3_M4-007 : Modes de preuve et exemples pratiques
+        B3_M4-008 : Exécution des décisions judiciaires
+        B3_M4-009 : Conclusion d'un accord transactionnel
+        B3_M4-010 : Évaluation des risques liés aux verdicts
+        B3_M4-011 : Stratégie contentieuse et rédaction de notes explicatives
+        B3_M4-012 : Auto-évaluation - Gestion des contentieux judiciaires
+        B3_M4-013 : Application - Gestion des contentieux judiciaires
+        B3_M4-014 : Offboarding - Gestion des contentieux judiciaires
+        B3_M4-015 : Piloter l’exécution des décisions judiciaires
+    `;
+
+    // --- Variables Globales d'Application ---
+    let courseStructure = [];
+    let completionState = {};
+    let totalLessons = 0;
+    const FIREBASE_COLLECTION = 'progress_tracker';
+    const FIREBASE_DOC_ID = 'course_state';
+    let isInitialLoad = true;
+    let db, userId; // Initialisé par le script Firebase ci-dessus
+    const BLOCK_TITLES = {
+        'B0': "B0 : Fondamentaux du Droit",
+        'B1': "B1 : Droit Social",
+        'B2': "B2 : Pilotage & RH",
+        'B3': "B3 : Contentieux"
+    };
+
+    // --- Fonctions de Parsage de la Structure ---
+
+    /**
+     * Parse la chaîne de caractères brute en structure de données hiérarchique.
+     */
+    function parseCourseData(data) {
+        const lines = data.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        const structure = [];
+        let currentBlock = null;
+        let currentModule = null;
+        totalLessons = 0; // Réinitialiser le compte
+
+        lines.forEach(line => {
+            if (line.startsWith('🟡')) {
+                const id = line.split(':')[0].trim().replace('🟡 ', '');
+                const title = line.substring(3).trim();
+                currentBlock = { id, title, type: 'block', modules: [] };
+                structure.push(currentBlock);
+                currentModule = null;
+
+            } else if (line.startsWith('🔵') && currentBlock) {
+                const id = line.split(':')[0].trim().replace('🔵 ', '');
+                const title = line.substring(3).trim();
+                currentModule = { id, title, type: 'module', lessons: [] };
+                currentBlock.modules.push(currentModule);
+
+            } else if (line.match(/B\d+_M\d+-\d{3} :/i) && currentModule) {
+                const [id, title] = line.split(':').map(s => s.trim());
+                if (id && title) {
+                    currentModule.lessons.push({ id, title, type: 'lesson' });
+                    totalLessons++;
+                }
+            }
+        });
+        return structure;
+    }
+
+    // --- Fonctions de Persistance (Firestore) ---
+
+    async function loadCompletionState() {
+        // window.db et window.userId sont définis par le script Firebase en haut
+        if (!window.db || !window.userId) { 
+            console.warn("Pas de base de données ou d'ID utilisateur valide. Chargement annulé.");
+            return {}; 
+        }
+        try {
+            const docRef = window.doc(window.db, 'artifacts', window.appId, 'users', window.userId, FIREBASE_COLLECTION, FIREBASE_DOC_ID);
+            const docSnap = await window.getDoc(docRef);
+            return docSnap.exists() ? docSnap.data() : {};
+        } catch (e) {
+            console.error("Erreur lors du chargement de la progression:", e);
+            return {};
+        }
+    }
+
+    async function saveCompletionState(newState, retry = 0) {
+        if (!window.db || !window.userId) { 
+            console.warn("Pas de base de données ou d'ID utilisateur valide. Sauvegarde annulée.");
+            return; 
+        }
+        const maxRetries = 5;
+        try {
+            const docRef = window.doc(window.db, 'artifacts', window.appId, 'users', window.userId, FIREBASE_COLLECTION, FIREBASE_DOC_ID);
+            await window.setDoc(docRef, newState);
+        } catch (e) {
+            if (retry < maxRetries) {
+                const delay = Math.pow(2, retry) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                await saveCompletionState(newState, retry + 1);
+            } else {
+                console.error("Échec de la sauvegarde après plusieurs tentatives:", e);
+            }
+        }
+    }
+
+    // --- Fonctions de Rendu et de Logique d'Application ---
+
+    function updateProgress() {
+        const completedLessons = Object.values(completionState).filter(status => status).length;
+        const percentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+
+        document.getElementById('progress-bar').style.width = `${percentage.toFixed(2)}%`;
+        document.getElementById('progress-text').textContent = `${completedLessons}/${totalLessons} leçons complétées (${percentage.toFixed(0)}%)`;
+
+        if (percentage > 0 && percentage < 1) {
+             document.getElementById('progress-bar').style.width = '1%';
+        }
+    }
+
+    function handleCheckboxChange(event) {
+        const lessonId = event.target.dataset.lessonId;
+        const isChecked = event.target.checked;
+
+        completionState[lessonId] = isChecked;
+
+        updateProgress();
+        
+        // Mise à jour du style de la leçon
+        const container = event.target.closest('.lesson-container');
+        if (container) {
+             if (isChecked) {
+                container.classList.remove('bg-white', 'hover:bg-gray-50');
+                container.classList.add('bg-green-50', 'ring-2', 'ring-green-400');
+                container.querySelector('span:nth-child(2)').classList.add('line-through', 'text-gray-600');
+            } else {
+                container.classList.remove('bg-green-50', 'ring-2', 'ring-green-400');
+                container.classList.add('bg-white', 'hover:bg-gray-50');
+                container.querySelector('span:nth-child(2)').classList.remove('line-through', 'text-gray-600');
+            }
+        }
+
+        saveCompletionState(completionState);
+    }
+
+    function createLessonElement(lesson) {
+        const isCompleted = completionState[lesson.id] === true;
+
+        const container = document.createElement('div');
+        container.className = `lesson-container flex items-start p-3 rounded-lg transition-all duration-300 shadow-sm ${isCompleted ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white hover:bg-gray-50'}`;
+        
+        container.innerHTML = `
+            <input type="checkbox" id="${lesson.id}" data-lesson-id="${lesson.id}" ${isCompleted ? 'checked' : ''}
+                   class="mt-1 w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 transition-colors duration-200 cursor-pointer">
+            <label for="${lesson.id}" class="ml-3 flex flex-col cursor-pointer">
+                <span class="font-mono text-sm text-gray-500">${lesson.id}</span>
+                <span class="text-gray-900 font-medium ${isCompleted ? 'line-through text-gray-600' : ''}">${lesson.title}</span>
+            </label>
+        `;
+
+        container.querySelector('input[type="checkbox"]').addEventListener('change', handleCheckboxChange);
+        return container;
+    }
+
+    function createModuleElement(module) {
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = "bg-blue-100 p-4 rounded-xl shadow-md border-l-4 border-blue-500 mb-4";
+        
+        // Contenu du module (caché par défaut)
+        const contentId = `content-${module.id}`;
+        
+        moduleDiv.innerHTML = `
+            <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('${contentId}').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')">
+                <h3 class="text-xl font-bold text-blue-800 flex items-center">
+                    <span class="text-2xl mr-2">🔵</span>
+                    ${module.title}
+                </h3>
+                <svg class="w-5 h-5 text-blue-700 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div id="${contentId}" class="space-y-2 pl-4 pt-3 mt-3 border-l-2 border-blue-300 hidden">
+                <!-- Les leçons seront insérées ici -->
+            </div>
+        `;
+
+        const lessonsContainer = moduleDiv.querySelector(`#${contentId}`);
+        module.lessons.forEach(lesson => {
+            lessonsContainer.appendChild(createLessonElement(lesson));
+        });
+
+        return moduleDiv;
+    }
+
+    function createBlockElement(block) {
+        const blockDiv = document.createElement('div');
+        blockDiv.id = `block-${block.id}`;
+        blockDiv.className = "course-block space-y-4";
+        
+        blockDiv.innerHTML = `
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-800 mb-6 mt-4 flex items-center">
+                <span class="text-3xl mr-3">🟡</span>
+                ${block.title}
+            </h2>
+            <div class="space-y-4" id="modules-container-${block.id}">
+                <!-- Les modules seront insérés ici -->
+            </div>
+        `;
+        
+        const modulesContainer = blockDiv.querySelector(`#modules-container-${block.id}`);
+        block.modules.forEach(module => {
+            modulesContainer.appendChild(createModuleElement(module));
+        });
+
+        return blockDiv;
+    }
+    
+    /**
+     * Gère la navigation par onglets.
+     */
+    function switchTab(blockId) {
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            if (btn.dataset.blockId === blockId) {
+                btn.classList.remove('text-gray-500', 'border-transparent', 'hover:border-gray-300');
+                btn.classList.add('text-blue-600', 'border-blue-600');
+            } else {
+                btn.classList.add('text-gray-500', 'border-transparent', 'hover:border-gray-300');
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+            }
+        });
+
+        document.querySelectorAll('.course-block').forEach(block => {
+            block.style.display = (block.id === `block-${blockId}`) ? 'block' : 'none';
+        });
+    }
+
+    function createTabButtons() {
+        const tabNav = document.getElementById('tab-navigation');
+        const firstBlockId = courseStructure.length > 0 ? courseStructure[0].id : null;
+        
+        courseStructure.forEach((block, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.blockId = block.id;
+            button.className = `tab-button px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${index === 0 ? 'text-blue-600 border-blue-600' : 'text-gray-500 border-transparent hover:border-gray-300'}`;
+            button.textContent = BLOCK_TITLES[block.id] || block.id;
+            button.onclick = () => switchTab(block.id);
+            tabNav.appendChild(button);
+        });
+
+        if (firstBlockId) {
+            switchTab(firstBlockId); // Activer le premier onglet
+        }
+    }
+
+    /**
+     * Gère le bouton "Remonter en haut"
+     */
+    function handleScroll() {
+        const btn = document.getElementById('scroll-to-top');
+        if (window.scrollY > 300) {
+            btn.classList.add('opacity-100', 'translate-y-0');
+            btn.classList.remove('opacity-0', 'translate-y-4');
+        } else {
+            btn.classList.remove('opacity-100', 'translate-y-0');
+            btn.classList.add('opacity-0', 'translate-y-4');
+        }
+    }
+
+
+    window.initApp = async function() {
+        // 1. Parser les données brutes
+        courseStructure = parseCourseData(COURSE_DATA_RAW);
+        
+        // 2. Récupérer l'état de complétion depuis Firestore (si disponible)
+        completionState = await loadCompletionState();
+
+        // 3. Masquer l'indicateur de chargement
+        document.getElementById('loading-indicator').style.display = 'none';
+
+        // 4. Générer le rendu de la liste
+        const courseListContainer = document.getElementById('course-list');
+        courseStructure.forEach(block => {
+            courseListContainer.appendChild(createBlockElement(block));
+        });
+
+        // 5. Créer la navigation par onglets
+        createTabButtons();
+        
+        // 6. Mettre à jour la progression initiale
+        updateProgress();
+
+        // 7. Initialiser le gestionnaire de défilement pour le bouton "Remonter"
+        window.addEventListener('scroll', handleScroll);
+        
+        // 8. Afficher l'application
+        document.getElementById('app-container').style.opacity = 1;
+        isInitialLoad = false;
+    };
+
+    // Assurez-vous que le gestionnaire de défilement est appelé même si l'app est en cours de chargement
+    window.addEventListener('scroll', handleScroll);
+
+</script>
+</body>
+</html>
